@@ -1,8 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { configureSwagger } from './config/swaggar.config';
+import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { EnvironmentVariables } from './config/env.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  app.enableCors({
+    origin: true,
+  });
+  configureSwagger(app, 'documentation');
+  await app.listen(app.get(ConfigService).get('PORT') ?? 5001, '0.0.0.0', () =>
+    new Logger('Documentation').log(
+      `http://localhost:${app.get(ConfigService<EnvironmentVariables>).get('PORT')}/documentation`,
+    ),
+  );
 }
 bootstrap();

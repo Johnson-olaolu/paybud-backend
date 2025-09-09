@@ -8,13 +8,14 @@ interface RmqModuleOptions {
 }
 
 @Module({
+  imports: [ConfigModule],
   providers: [RabbitmqService],
   exports: [RabbitmqService],
 })
-export class RmqModule {
+export class RabbitmqModule {
   static register({ name }: RmqModuleOptions): DynamicModule {
     return {
-      module: RmqModule,
+      module: RabbitmqModule,
       global: true,
       imports: [
         ClientsModule.registerAsync([

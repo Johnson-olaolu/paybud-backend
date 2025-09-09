@@ -1,5 +1,5 @@
 /* eslint-disable */
 export default async () => {
     const t = {};
-    return { "@nestjs/swagger": { "models": [], "controllers": [[import("./app.controller"), { "AppController": { "getHello": { type: String } } }]] } };
+    return { "@nestjs/swagger": { "models": [[import("./vendor/auth/dto/create-auth.dto"), { "CreateAuthDto": {} }], [import("./vendor/auth/dto/update-auth.dto"), { "UpdateAuthDto": {} }], [import("./vendor/role/dto/create-role.dto"), { "CreateRoleDto": {} }], [import("./vendor/role/dto/update-role.dto"), { "UpdateRoleDto": {} }], [import("./vendor/auth/entities/auth.entity"), { "Auth": {} }]], "controllers": [[import("./app.controller"), { "AppController": { "getHello": { type: String } } }], [import("./vendor/auth/auth.controller"), { "AuthController": { "create": { type: String }, "findAll": { type: String }, "findOne": { type: String }, "update": { type: String }, "remove": { type: String } } }], [import("./vendor/role/role.controller"), { "RoleController": { "create": {}, "findAll": {}, "findOne": {}, "update": {}, "remove": {} } }]] } };
 };

@@ -29,6 +29,12 @@
       ],
       "@app/rabbitmq/*": [
         "libs/rabbitmq/src/*"
+      ],
+      "@app/shared": [
+        "libs/shared/src"
+      ],
+      "@app/shared/*": [
+        "libs/shared/src/*"
       ]
     }
   },
