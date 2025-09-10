@@ -31,7 +31,6 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
 
     const cachedTokens =
       (await this.cacheManager.get<string[]>(`tokens:${sub}`)) || [];
-    console.log(cachedTokens);
     if (!cachedTokens.includes(tokenId)) {
       throw new UnauthorizedException('Invalid token');
     }
