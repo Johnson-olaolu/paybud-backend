@@ -26,73 +26,29 @@ export class EnvironmentVariables {
   @IsNumber()
   PORT: number;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // SECRET_KEY: string;
+  @IsString()
+  @IsNotEmpty()
+  JWT_SECRET_KEY: string;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // NODE_ENV: string;
+  @IsNumber()
+  JWT_ACCESS_TOKEN_EXPIRATION: number;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // JWT_EXPIRATION_TIME: string;
+  @IsNumber()
+  JWT_REFRESH_TOKEN_EXPIRATION: number;
 
-  // @IsString()
-  // MONGODB_URI: string;
+  @IsString()
+  REDIS_PORT: string;
 
-  // @IsString()
-  // REDIS_PORT: string;
+  @IsString()
+  REDIS_HOST: string;
 
-  // @IsString()
-  // REDIS_HOST: string;
+  @IsString()
+  @IsOptional()
+  REDIS_PASSWORD?: string;
 
-  // @IsString()
-  // @IsOptional()
-  // REDIS_PASSWORD?: string;
-
-  // @IsString()
-  // @IsOptional()
-  // REDIS_USERNAME?: string;
-
-  // @IsString()
-  // CLIENT_URL: string;
-
-  // @IsString()
-  // GOOGLE_OAUTH_CLIENTID: string;
-
-  // @IsString()
-  // GOOGLE_OAUTH_SECRET: string;
-
-  // @IsString()
-  // BASE_URL: string;
-
-  // @IsNumber()
-  // CACHE_TTL: number;
-
-  // @IsString()
-  // CLOUDINARY_API_KEY: string;
-
-  // @IsString()
-  // CLOUDINARY_API_SECRET: string;
-
-  // @IsString()
-  // CLOUDINARY_NAME: string;
-
-  // @IsString()
-  // AI_URL: string;
-
-  // @IsString()
-  // AI_API_KEY: string;
-
-  // @IsString()
-  // EMAIL_HOST: string;
-
-  // @IsString()
-  // EMAIL_USER: string;
-
-  // @IsString()
-  // EMAIL_PASSWORD: string;
+  @IsString()
+  @IsOptional()
+  REDIS_USERNAME?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

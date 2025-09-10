@@ -20,6 +20,8 @@ import { EnvironmentVariables } from '../config/env.config';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { AuthenticateUserDto } from './dto/authenticate-user.dto';
+import { RegistrationTypeEnum } from '../utils /constants';
 
 @Injectable()
 export class UserService {
@@ -123,6 +125,7 @@ export class UserService {
       subject: 'Confirm your email',
       body,
     });
+    return user;
   }
 
   async verifyEmail(token: string) {
@@ -169,6 +172,19 @@ export class UserService {
       throw new BadRequestException('User not found');
     }
     return user;
+  }
+
+  async authenticateUser(authenticateUserDto: AuthenticateUserDto) {
+    const user = await this.findOneByEmail(authenticateUserDto.email);
+    if (user.registrationType !== RegistrationTypeEnum.EMAIL) {
+      throw new BadRequestException(
+        `Please Login with Oauth : ${user.registrationType}`,
+      );
+    }
+    if (user.comparePasswords(authenticateUserDto.password)) {
+      return user;
+    }
+    throw new BadRequestException('Invalid credentials');
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

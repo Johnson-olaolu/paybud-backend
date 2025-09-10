@@ -19,6 +19,7 @@ import { Role } from '../role/entities/role.entity';
 import { isBcryptHash } from '@app/shared/utils/misc';
 import { Business } from '../../business/entities/business.entity';
 import { Profile } from './profile.entity';
+import { RegistrationTypeEnum } from '../../utils /constants';
 
 @Entity()
 @Index(['email', 'isEmailVerified'])
@@ -51,6 +52,12 @@ export class User extends BaseEntity {
     default: false,
   })
   isEmailVerified: boolean;
+
+  @Column({
+    default: RegistrationTypeEnum.EMAIL,
+    type: 'text',
+  })
+  registrationType: RegistrationTypeEnum;
 
   @ManyToOne(() => Role)
   @JoinColumn()

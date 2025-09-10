@@ -7,6 +7,14 @@ export const defaultRoles: CreateRoleDto[] = [
   { name: 'user', description: 'Company user' },
 ];
 
+export enum RegistrationTypeEnum {
+  EMAIL = 'EMAIL',
+  GOOGLE = 'GOOGLE',
+  FACEBOOK = 'FACEBOOK',
+  TWITTER = 'TWITTER',
+  GITHUB = 'GITHUB',
+}
+
 export enum WalletTransactionStatusEnum {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',
