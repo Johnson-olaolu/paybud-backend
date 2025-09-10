@@ -36,7 +36,8 @@ import KeyvRedis from '@keyv/redis';
         return {
           stores: [
             new KeyvRedis(
-              `redis://${configService.get('REDIS_USERNAME')}:${configService.get('REDIS_PASSWORD')}@${configService.get('REDIS_HOST')}:${configService.get('REDIS_PORT')}`,
+              // `redis://${configService.get('REDIS_USERNAME')}:${configService.get('REDIS_PASSWORD')}@${configService.get('REDIS_HOST')}:${configService.get('REDIS_PORT')}`,
+              `redis://${configService.get('REDIS_HOST')}:${configService.get('REDIS_PORT')}`,
             ),
           ],
         };

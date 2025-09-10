@@ -1,18 +1,18 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { User } from 'apps/gateway/types/vendor';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
@@ -20,9 +20,10 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @Get('me')
+  getLoggedInUser(@Req() request: Request) {
+    const user = (request as unknown as { user: User }).user;
+    return user;
   }
 
   @Get()

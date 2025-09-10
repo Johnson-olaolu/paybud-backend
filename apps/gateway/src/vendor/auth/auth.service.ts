@@ -68,12 +68,18 @@ export class AuthService {
   }
 
   async getUser(userId: string) {
+    const cacheKey = `user:${userId}`;
+    const cachedUser = await this.cacheManager.get<User>(cacheKey);
+    if (cachedUser) {
+      return cachedUser;
+    }
     const user = await lastValueFrom<User>(
       this.vendorProxy.send('findOneUser', userId),
     ).catch((error) => {
       console.log(error);
       throw new RpcException(error.message);
     });
+    await this.cacheManager.set(cacheKey, user, 300); // Cache for 5 minutes
     return user;
   }
 
