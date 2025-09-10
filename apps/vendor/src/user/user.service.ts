@@ -22,6 +22,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { RegistrationTypeEnum } from '../utils /constants';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UserService {
@@ -47,11 +48,11 @@ export class UserService {
       const profile = this.profileRepository.create({
         profilePicture: generateAvatar(),
       });
-      await queryRunner.manager.save(profile);
+      const savedProfile = await queryRunner.manager.save(profile);
       const role = await this.roleService.findOneByName('owner');
       const user = this.userRepository.create({
         ...createUserDto,
-        profile: profile,
+        profile: savedProfile,
         role: role,
         roleName: role.name,
       });
@@ -129,23 +130,58 @@ export class UserService {
   }
 
   async verifyEmail(token: string) {
-    try {
-      const payload = this.jwtService.verify<{ email: string; sub: string }>(
-        token,
-      );
-      const user = await this.findOne(payload.sub);
-      if (!user) {
-        throw new BadRequestException('User not found');
-      }
-      if (user.isEmailVerified) {
-        return { message: 'Email already verified' };
-      }
-      user.isEmailVerified = true;
-      return user.save();
-    } catch (error) {
-      console.log(error);
-      throw new BadRequestException('Invalid or expired token');
+    const payload = await this.jwtService
+      .verifyAsync<{ email: string; sub: string }>(token)
+      .catch(() => {
+        throw new BadRequestException('Invalid or expired token');
+      });
+    const user = await this.findOne(payload.sub);
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email is already verified');
     }
+    user.isEmailVerified = true;
+    const body = generateEmailBody('welcome-email', {
+      name: user.fullName || '',
+    });
+    this.notificationProxy.emit('sendEmail', {
+      email: user.email,
+      subject: 'Welcome to PayBud',
+      body,
+    });
+    return user.save();
+  }
+
+  async generateForgotPasswordToken(email: string) {
+    const user = await this.findOneByEmail(email);
+    const payload = { sub: user.id, email: user.email };
+    const token = this.jwtService.sign(payload, {
+      expiresIn: '30m',
+    });
+    const resetLink = `${this.configService.get(
+      'FRONTEND_URL',
+    )}/vendor/auth/reset-password?token=${token}`;
+    const body = generateEmailBody('reset-password', {
+      name: user.fullName || '',
+      resetLink,
+    });
+    this.notificationProxy.emit('sendEmail', {
+      email: user.email,
+      subject: 'Reset your password',
+      body,
+    });
+    return true;
+  }
+
+  async changePassword(changePasswordDto: ChangePasswordDto) {
+    const payload = await this.jwtService
+      .verifyAsync<{ email: string; sub: string }>(changePasswordDto.token)
+      .catch(() => {
+        throw new BadRequestException('Invalid or expired token');
+      });
+    const user = await this.findOne(payload.sub);
+    user.password = changePasswordDto.password;
+    await user.save();
+    return user;
   }
 
   async findAll() {
@@ -167,7 +203,10 @@ export class UserService {
   }
 
   async findOneByEmail(email: string) {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({
+      where: { email },
+      relations: ['profile', 'business'],
+    });
     if (!user) {
       throw new BadRequestException('User not found');
     }

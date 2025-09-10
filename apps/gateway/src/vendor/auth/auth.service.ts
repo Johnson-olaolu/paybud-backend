@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { generateRandomString } from '../../utils/misc';
 import { Cache } from 'cache-manager';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,33 @@ export class AuthService {
   async resendVerificationEmail(email: string) {
     const user = await lastValueFrom(
       this.vendorProxy.send<User>('resendVerificationEmail', email),
+    ).catch((error) => {
+      throw new RpcException(error.message);
+    });
+    return user;
+  }
+
+  async verifyEmail(token: string) {
+    const user = await lastValueFrom<User>(
+      this.vendorProxy.send('verifyEmail', token),
+    ).catch((error) => {
+      throw new RpcException(error.message);
+    });
+    return user;
+  }
+
+  async generateForgotPasswordToken(email: string) {
+    const user = await lastValueFrom<User>(
+      this.vendorProxy.send('generateForgotPasswordToken', email),
+    ).catch((error) => {
+      throw new RpcException(error.message);
+    });
+    return user;
+  }
+
+  async resetPassword(changePasswordDto: ChangePasswordDto) {
+    const user = await lastValueFrom<User>(
+      this.vendorProxy.send('changePassword', changePasswordDto),
     ).catch((error) => {
       throw new RpcException(error.message);
     });

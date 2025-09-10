@@ -20,6 +20,8 @@ import { VendorLocalAuthGuard } from '../../guards/loginGuard.guard';
 import { LoginDto } from './dto/login.dto';
 import { User } from 'apps/gateway/types/vendor';
 import { Response, Request } from 'express';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('Vendor Auth')
 @Controller('vendor/auth')
@@ -69,6 +71,39 @@ export class AuthController {
     return {
       success: true,
       message: 'Verification email sent successfully',
+      data: user,
+    };
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    const user = await this.authService.verifyEmail(verifyEmailDto.token);
+    return {
+      success: true,
+      message: 'Email verified successfully',
+      data: user,
+    };
+  }
+
+  @Get('forgot-password')
+  async generateForgotPasswordToken(@Query('email') email: string) {
+    if (!email) {
+      throw new BadRequestException('Email query parameter is required');
+    }
+    const user = await this.authService.generateForgotPasswordToken(email);
+    return {
+      success: true,
+      message: 'Forgot password token generated and sent to email',
+      data: user,
+    };
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() changePasswordDto: ChangePasswordDto) {
+    const user = await this.authService.resetPassword(changePasswordDto);
+    return {
+      success: true,
+      message: 'Password reset successfully',
       data: user,
     };
   }

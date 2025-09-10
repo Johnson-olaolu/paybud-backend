@@ -4,6 +4,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller()
 export class UserController {
@@ -33,6 +34,21 @@ export class UserController {
   async resendVerificationEmail(@Payload() email: string) {
     const user = await this.userService.findOneByEmail(email);
     return this.userService.sendConfirmUserEmail(user);
+  }
+
+  @MessagePattern(`verifyEmail`)
+  verifyEmail(@Payload() token: string) {
+    return this.userService.verifyEmail(token);
+  }
+
+  @MessagePattern('generateForgotPasswordToken')
+  generateForgotPasswordToken(@Payload() email: string) {
+    return this.userService.generateForgotPasswordToken(email);
+  }
+
+  @MessagePattern('changePassword')
+  changePassword(@Payload() changePasswordDto: ChangePasswordDto) {
+    return this.userService.changePassword(changePasswordDto);
   }
 
   @MessagePattern('authenticateUser')
