@@ -85,11 +85,7 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  JWT_SECRET_KEY: string;
-
-  @IsString()
-  @IsNotEmpty()
-  FRONTEND_URL: string;
+  MAIL_FROM: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

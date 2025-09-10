@@ -3,13 +3,16 @@ import { VendorController } from './vendor.controller';
 import { VendorService } from './vendor.service';
 import { RabbitmqModule } from '@app/rabbitmq';
 import { DatabaseModule } from '@app/database';
-import { ConfigModule } from '@nestjs/config';
-import { validateEnv } from './config/env.config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EnvironmentVariables, validateEnv } from './config/env.config';
 import { UserModule } from './user/user.module';
 import { WalletModule } from './wallet/wallet.module';
 import { BusinessModule } from './business/business.module';
-import { AuthModule } from './auth/auth.module';
 import { SeedModule } from './seed/seed.module';
+import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+import { JwtModule } from '@nestjs/jwt';
+import { CacheModule } from '@nestjs/cache-manager';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
@@ -18,12 +21,34 @@ import { SeedModule } from './seed/seed.module';
       validate: validateEnv,
       envFilePath: 'apps/vendor/.env',
     }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<EnvironmentVariables>) => ({
+        secret: configService.get('JWT_SECRET_KEY'),
+      }),
+      global: true,
+    }),
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<EnvironmentVariables>) => {
+        return {
+          stores: [
+            new KeyvRedis(
+              `redis://${configService.get('REDIS_USERNAME')}:${configService.get('REDIS_PASSWORD')}@${configService.get('REDIS_HOST')}:${configService.get('REDIS_PORT')}`,
+            ),
+          ],
+        };
+      },
+      isGlobal: true,
+    }),
     DatabaseModule,
     RabbitmqModule,
+    RabbitmqModule.register({ name: RABBITMQ_QUEUES.NOTIFICATION }),
     UserModule,
     WalletModule,
     BusinessModule,
-    AuthModule,
     SeedModule,
   ],
   controllers: [VendorController],

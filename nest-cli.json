@@ -39,7 +39,15 @@
       "entryFile": "main",
       "sourceRoot": "apps/gateway/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/gateway/tsconfig.app.json"
+        "tsConfigPath": "apps/gateway/tsconfig.app.json",
+        "plugins": [
+          {
+            "name": "@nestjs/swagger",
+            "options": {
+              "dtoFileNameSuffix": [".dto.ts", ".entity.ts"]
+            }
+          }
+        ]
       }
     },
     "notification": {
@@ -93,7 +101,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/vendor/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/vendor/tsconfig.app.json"
+        "tsConfigPath": "apps/vendor/tsconfig.app.json",
+        "assets": ["/templates/**/*"],
+        "watchAssets": true
       }
     }
   }

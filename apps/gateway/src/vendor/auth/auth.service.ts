@@ -1,26 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { Inject, Injectable } from '@nestjs/common';
+import { RegisterDto } from './dto/register.dto';
+import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
+import { User } from 'apps/gateway/types/vendor';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+  constructor(
+    @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
+  ) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  async register(registerDto: RegisterDto) {
+    const user = await lastValueFrom<User>(
+      this.vendorProxy.send('createUser', registerDto),
+    ).catch((error) => {
+      throw new RpcException(error.message);
+    });
+    return user;
   }
 }

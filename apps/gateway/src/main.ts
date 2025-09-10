@@ -10,8 +10,8 @@ async function bootstrap() {
   app.enableCors({
     origin: true,
   });
-  configureSwagger(app, 'documentation');
-  await app.listen(app.get(ConfigService).get('PORT') ?? 5001, '0.0.0.0', () =>
+  await configureSwagger(app, 'documentation');
+  await app.listen(app.get(ConfigService).get('PORT') ?? 3000, '0.0.0.0', () =>
     new Logger('Documentation').log(
       `http://localhost:${app.get(ConfigService<EnvironmentVariables>).get('PORT')}/documentation`,
     ),

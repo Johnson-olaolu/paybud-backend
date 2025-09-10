@@ -1,6 +1,7 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, instanceToPlain } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
 import {
+  BaseEntity,
   BeforeInsert,
   BeforeUpdate,
   Column,
@@ -9,18 +10,29 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   Relation,
   UpdateDateColumn,
 } from 'typeorm';
 import { Role } from '../role/entities/role.entity';
 import { isBcryptHash } from '@app/shared/utils/misc';
+import { Business } from '../../business/entities/business.entity';
+import { Profile } from './profile.entity';
 
 @Entity()
 @Index(['email', 'isEmailVerified'])
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @ManyToOne(() => Business, (business) => business.users)
+  @JoinColumn()
+  business: Relation<Business>;
+
+  @OneToOne(() => Profile, (profile) => profile.user, { cascade: true })
+  @JoinColumn()
+  profile: Relation<Profile>;
 
   @Column({
     unique: true,
@@ -33,10 +45,7 @@ export class User {
   password: string;
 
   @Column({ nullable: true })
-  firstName: string;
-
-  @Column({ nullable: true })
-  lastName: string;
+  fullName: string;
 
   @Column({
     default: false,
@@ -70,5 +79,9 @@ export class User {
   comparePasswords(password: string) {
     const result = bcrypt.compareSync(password, this.password);
     return result;
+  }
+
+  toJSON() {
+    return instanceToPlain(this);
   }
 }
