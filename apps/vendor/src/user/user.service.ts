@@ -46,7 +46,7 @@ export class UserService {
     await queryRunner.startTransaction();
     try {
       const profile = this.profileRepository.create({
-        profilePicture: generateAvatar(),
+        profilePicture: createUserDto.profilePicture || generateAvatar(),
       });
       const savedProfile = await queryRunner.manager.save(profile);
       const role = await this.roleService.findOneByName('owner');
@@ -235,6 +235,39 @@ export class UserService {
       }
     }
     return await user.save();
+  }
+
+  async oAuthCreateUser(
+    registrationType: RegistrationTypeEnum,
+    createUserDto: CreateUserDto,
+  ) {
+    let user = await this.userRepository.findOne({
+      where: { email: createUserDto.email },
+      relations: ['profile', 'business'],
+    });
+    if (!user) {
+      const profile = await this.profileRepository.save({
+        profilePicture: createUserDto.profilePicture || generateAvatar(),
+      });
+      const role = await this.roleService.findOneByName('owner');
+      user = this.userRepository.create({
+        ...createUserDto,
+        registrationType: registrationType,
+        profile: profile,
+        isEmailVerified: true,
+        role,
+        roleName: role.name,
+      });
+      const body = generateEmailBody('welcome-email', {
+        name: user.fullName || '',
+      });
+      this.notificationProxy.emit('sendEmail', {
+        email: user.email,
+        subject: 'Welcome to PayBud',
+        body,
+      });
+      return await this.userRepository.save(user);
+    }
   }
 
   async remove(id: string) {

@@ -12,12 +12,16 @@ import { ConfigService } from '@nestjs/config';
 import { generateRandomString } from '../../utils/misc';
 import { Cache } from 'cache-manager';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
+import { GoogleAuthService } from '../../services/google/google-auth.service';
+import { RegistrationTypeEnum } from '../../utils/constants';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
     private jwtService: JwtService,
+    private googleAuthService: GoogleAuthService,
     private configService: ConfigService<EnvironmentVariables>,
     @Inject('CACHE_MANAGER') private cacheManager: Cache,
   ) {}
@@ -152,6 +156,28 @@ export class AuthService {
       throw new BadRequestException('User not found');
     }
     return this.getTokens(userId, decoded.email);
+  }
+
+  async googleLogin(googleLoginDto: GoogleLoginDto) {
+    const payload = await this.googleAuthService.verifyToken(
+      googleLoginDto.token,
+    );
+    if (!payload || !payload.email) {
+      throw new BadRequestException('Invalid Google token');
+    }
+    const user = await lastValueFrom<User>(
+      this.vendorProxy.send('oAuthCreateUser', {
+        type: RegistrationTypeEnum.GOOGLE,
+        createUserDto: {
+          email: payload.email,
+          fullName: payload.name,
+          profilePicture: payload.picture,
+        },
+      }),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return user;
   }
 
   async logout(userId: string, token: string) {

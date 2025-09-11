@@ -62,6 +62,16 @@ export class AuthController {
     };
   }
 
+  @Post('google-login')
+  async googleLogin(@Body() googleLoginDto: { token: string }) {
+    const user = await this.authService.googleLogin(googleLoginDto);
+    return {
+      success: true,
+      message: 'Google login successful',
+      data: user,
+    };
+  }
+
   @Get('verify-email')
   async resendVerificationEmail(@Query('email') email: string) {
     if (!email) {

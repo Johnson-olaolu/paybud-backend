@@ -49,6 +49,18 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   REDIS_USERNAME?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_CLIENT_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_CLIENT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FRONTEND_URL: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

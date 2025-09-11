@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RegistrationTypeEnum } from '../utils /constants';
 
 @Controller()
 export class UserController {
@@ -13,6 +14,17 @@ export class UserController {
   @MessagePattern('createUser')
   create(@Payload() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @MessagePattern('oAuthCreateUser')
+  oAuthCreateUser(
+    @Payload()
+    data: {
+      type: RegistrationTypeEnum;
+      createUserDto: CreateUserDto;
+    },
+  ) {
+    return this.userService.oAuthCreateUser(data.type, data.createUserDto);
   }
 
   @MessagePattern('findAllUser')

@@ -10,6 +10,7 @@ import { EnvironmentVariables, validateEnv } from './config/env.config';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ServicesModule } from './services/services.module';
 import KeyvRedis from '@keyv/redis';
 
 @Module({
@@ -44,6 +45,7 @@ import KeyvRedis from '@keyv/redis';
       isGlobal: true,
     }),
     CacheModule.register({ isGlobal: true }),
+    ServicesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
