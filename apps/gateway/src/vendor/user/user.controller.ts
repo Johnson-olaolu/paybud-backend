@@ -23,7 +23,11 @@ export class UserController {
   @Get('me')
   getLoggedInUser(@Req() request: Request) {
     const user = (request as unknown as { user: User }).user;
-    return user;
+    return {
+      success: true,
+      message: 'User fetched successfully',
+      data: user,
+    };
   }
 
   @Get()
