@@ -26,7 +26,7 @@ export class AuthService {
     const user = await lastValueFrom<User>(
       this.vendorProxy.send('createUser', registerDto),
     ).catch((error) => {
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     });
     return user;
   }
@@ -35,7 +35,7 @@ export class AuthService {
     const user = await lastValueFrom(
       this.vendorProxy.send<User>('resendVerificationEmail', email),
     ).catch((error) => {
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     });
     return user;
   }
@@ -44,7 +44,7 @@ export class AuthService {
     const user = await lastValueFrom<User>(
       this.vendorProxy.send('verifyEmail', token),
     ).catch((error) => {
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     });
     return user;
   }
@@ -53,7 +53,7 @@ export class AuthService {
     const user = await lastValueFrom<User>(
       this.vendorProxy.send('generateForgotPasswordToken', email),
     ).catch((error) => {
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     });
     return user;
   }
@@ -62,7 +62,7 @@ export class AuthService {
     const user = await lastValueFrom<User>(
       this.vendorProxy.send('changePassword', changePasswordDto),
     ).catch((error) => {
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     });
     return user;
   }
@@ -77,7 +77,7 @@ export class AuthService {
       this.vendorProxy.send('findOneUser', userId),
     ).catch((error) => {
       console.log(error);
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     });
     await this.cacheManager.set(cacheKey, user, 300); // Cache for 5 minutes
     return user;
@@ -87,7 +87,7 @@ export class AuthService {
     const user = await lastValueFrom<User>(
       this.vendorProxy.send('authenticateUser', { email, password }),
     ).catch((error) => {
-      throw new RpcException(error.message);
+      throw new RpcException(error);
     });
     return user;
   }
