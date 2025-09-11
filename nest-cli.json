@@ -21,7 +21,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/client/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/client/tsconfig.app.json"
+        "tsConfigPath": "apps/client/tsconfig.app.json",
+        "assets": ["/templates/**/*"],
+        "watchAssets": true
       }
     },
     "database": {

@@ -25,7 +25,7 @@ import { RegistrationTypeEnum } from '../../utils /constants';
 @Entity()
 @Index(['email', 'isEmailVerified'])
 @Check(
-  `(registrationType = '${RegistrationTypeEnum.EMAIL}' AND password IS NOT NULL AND password <> '') OR (registrationType != '${RegistrationTypeEnum.EMAIL}')`,
+  `("registrationType" = '${RegistrationTypeEnum.EMAIL}' AND password IS NOT NULL AND password <> '') OR ("registrationType" != '${RegistrationTypeEnum.EMAIL}')`,
 )
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')

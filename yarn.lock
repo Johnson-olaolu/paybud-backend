@@ -2480,6 +2480,11 @@
     "@aws-sdk/client-sesv2" "^3.839.0"
     "@types/node" "*"
 
+"@types/otp-generator@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.npmjs.org/@types/otp-generator/-/otp-generator-4.0.2.tgz"
+  integrity sha512-9+qqWzuFb332hXPbLgjUyOXlbcaTQkmkmqQjTduvNuOmPV5fW+iLv70JsVEhdUy0DWi4kY34++HDCaWl6N0AYg==
+
 "@types/passport-jwt@^4.0.1":
   version "4.0.1"
   resolved "https://registry.npmjs.org/@types/passport-jwt/-/passport-jwt-4.0.1.tgz"
@@ -7123,6 +7128,11 @@ ora@5.4.1:
     log-symbols "^4.1.0"
     strip-ansi "^6.0.0"
     wcwidth "^1.0.1"
+
+otp-generator@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/otp-generator/-/otp-generator-4.0.1.tgz"
+  integrity sha512-2TJ52vUftA0+J3eque4wwVtpaL4/NdIXDL0gFWFJFVUAZwAN7+9tltMhL7GCNYaHJtuONoier8Hayyj4HLbSag==
 
 p-cancelable@^3.0.0:
   version "3.0.0"

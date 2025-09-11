@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { LoginDto } from '../vendor/auth/dto/login.dto';
+import { EmailLoginDto } from '../client/auth/dto/email-login.dto';
 
 @Injectable()
 export class VendorLocalAuthGuard extends AuthGuard('local') {
@@ -13,6 +14,36 @@ export class VendorLocalAuthGuard extends AuthGuard('local') {
 
     // transform the request object to class instance
     const body = plainToClass(LoginDto, request.body);
+
+    // get a list of errors
+    const errors = await validate(body);
+
+    // extract error messages from the errors array
+    const errorMessages = errors.flatMap(({ constraints }) =>
+      Object.values(constraints ?? {}),
+    );
+
+    if (errorMessages.length > 0) {
+      // return bad request if validation fails
+      response.status(HttpStatus.BAD_REQUEST).send({
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'Bad Request',
+        message: errorMessages,
+      });
+    }
+
+    return super.canActivate(context) as boolean | Promise<boolean>;
+  }
+}
+
+@Injectable()
+export class ClientLocalAuthGuard extends AuthGuard('client-local') {
+  async canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest<Request>();
+    const response = context.switchToHttp().getResponse<Response>();
+
+    // transform the request object to class instance
+    const body = plainToClass(EmailLoginDto, request.body);
 
     // get a list of errors
     const errors = await validate(body);

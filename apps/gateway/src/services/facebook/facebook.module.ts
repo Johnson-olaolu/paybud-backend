@@ -13,4 +13,4 @@ import { HttpModule } from '@nestjs/axios';
   providers: [FacebookAuthService],
   exports: [FacebookAuthService],
 })
-export class ServicesModule {}
+export class FacebookModule {}
