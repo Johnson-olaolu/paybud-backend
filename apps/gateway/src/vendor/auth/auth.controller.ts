@@ -22,6 +22,8 @@ import { User } from 'apps/gateway/types/vendor';
 import { Response, Request } from 'express';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
+import { FacebookLoginDto } from './dto/facebook-login.dto';
 
 @ApiTags('Vendor Auth')
 @Controller('vendor/auth')
@@ -63,11 +65,21 @@ export class AuthController {
   }
 
   @Post('google-login')
-  async googleLogin(@Body() googleLoginDto: { token: string }) {
+  async googleLogin(@Body() googleLoginDto: GoogleLoginDto) {
     const user = await this.authService.googleLogin(googleLoginDto);
     return {
       success: true,
       message: 'Google login successful',
+      data: user,
+    };
+  }
+
+  @Post('facebook-login')
+  async facebookLogin(@Body() facebookLoginDto: FacebookLoginDto) {
+    const user = await this.authService.facebookLogin(facebookLoginDto);
+    return {
+      success: true,
+      message: 'Facebook login successful',
       data: user,
     };
   }

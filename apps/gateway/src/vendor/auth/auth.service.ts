@@ -15,6 +15,8 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { GoogleAuthService } from '../../services/google/google-auth.service';
 import { RegistrationTypeEnum } from '../../utils/constants';
+import { FacebookLoginDto } from './dto/facebook-login.dto';
+import { FacebookAuthService } from '../../services/facebook/facebook.auth.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +24,7 @@ export class AuthService {
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
     private jwtService: JwtService,
     private googleAuthService: GoogleAuthService,
+    private facebookAuthService: FacebookAuthService,
     private configService: ConfigService<EnvironmentVariables>,
     @Inject('CACHE_MANAGER') private cacheManager: Cache,
   ) {}
@@ -172,6 +175,28 @@ export class AuthService {
           email: payload.email,
           fullName: payload.name,
           profilePicture: payload.picture,
+        },
+      }),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return user;
+  }
+
+  async facebookLogin(facebookLoginDto: FacebookLoginDto) {
+    const data = await this.facebookAuthService.verifyToken(
+      facebookLoginDto.token,
+    );
+    if (!data || !data.email) {
+      throw new BadRequestException('Invalid Facebook token');
+    }
+    const user = await lastValueFrom<User>(
+      this.vendorProxy.send('oAuthCreateUser', {
+        type: RegistrationTypeEnum.FACEBOOK,
+        createUserDto: {
+          email: data.email,
+          fullName: data.name,
+          profilePicture: data.picture?.data.url,
         },
       }),
     ).catch((error) => {
