@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { Wallet } from '../../wallet/entities/wallet.entity';
 import { User } from '../../user/entities/user.entity';
-import { BusinessProfile } from './business-profile';
+import { BusinessProfile } from './business-profile.entity';
 
 @Entity()
 export class Business extends BaseEntity {

@@ -40,3 +40,16 @@ export enum WalletStatusEnum {
   SUSPENDED = 'SUSPENDED',
   CLOSED = 'CLOSED',
 }
+
+export enum WalletCurrencyEnum {
+  // USD = 'USD',
+  // EUR = 'EUR',
+  // GBP = 'GBP',
+  NGN = 'NGN',
+  // GHS = 'GHS',
+  // ZAR = 'ZAR',
+  // KES = 'KES',
+  // UGX = 'UGX',
+  // TZS = 'TZS',
+  // RWF = 'RWF',
+}

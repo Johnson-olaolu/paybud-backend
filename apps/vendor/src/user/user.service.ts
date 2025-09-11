@@ -226,9 +226,15 @@ export class UserService {
     throw new BadRequestException('Invalid credentials');
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    console.log(updateUserDto);
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne(id);
+    for (const key in updateUserDto) {
+      if (updateUserDto[key] !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        user[key] = updateUserDto[key];
+      }
+    }
+    return await user.save();
   }
 
   async remove(id: string) {

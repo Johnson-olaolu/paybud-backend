@@ -1,34 +1,74 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
-@Controller('business')
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
+@Controller('vendor/business')
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
   @Post()
-  create(@Body() createBusinessDto: CreateBusinessDto) {
-    return this.businessService.create(createBusinessDto);
+  async create(@Body() createBusinessDto: CreateBusinessDto) {
+    const data = await this.businessService.create(createBusinessDto);
+    return {
+      success: true,
+      message: 'Business Created Successfully',
+      data,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.businessService.findAll();
+  async findAll() {
+    const data = await this.businessService.findAll();
+    return {
+      success: true,
+      message: 'Businesses Retrieved Successfully',
+      data,
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.businessService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const data = await this.businessService.findOne(id);
+    return {
+      success: true,
+      message: 'Business Retrieved Successfully',
+      data,
+    };
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBusinessDto: UpdateBusinessDto) {
-    return this.businessService.update(+id, updateBusinessDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateBusinessDto: UpdateBusinessDto,
+  ) {
+    const data = await this.businessService.update(id, updateBusinessDto);
+    return {
+      success: true,
+      message: 'Business Updated Successfully',
+      data,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.businessService.remove(+id);
+  async remove(@Param('id') id: string) {
+    await this.businessService.remove(id);
+    return {
+      success: true,
+      message: 'Business Removed Successfully',
+    };
   }
 }

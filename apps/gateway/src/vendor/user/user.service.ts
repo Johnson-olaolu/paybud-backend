@@ -14,21 +14,36 @@ export class UserService {
   async findAll() {
     const users = await lastValueFrom(
       this.vendorProxy.send<User[]>('findAllUser', {}),
-    ).catch((err: { message: string }) => {
-      throw new RpcException(err.message);
+    ).catch((error) => {
+      throw new RpcException(error);
     });
     return users;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await lastValueFrom(
+      this.vendorProxy.send<User>('findOneUser', id),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await lastValueFrom(
+      this.vendorProxy.send<User>('updateUser', { id, updateUserDto }),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    const user = await lastValueFrom(
+      this.vendorProxy.send<User>('removeUser', id),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return user;
   }
 }

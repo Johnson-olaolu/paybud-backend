@@ -1,26 +1,61 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
+import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
+import { Business } from 'apps/gateway/types/vendor';
 
 @Injectable()
 export class BusinessService {
-  create(createBusinessDto: CreateBusinessDto) {
-    return 'This action adds a new business';
+  constructor(
+    @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
+  ) {}
+  async create(createBusinessDto: CreateBusinessDto) {
+    const business = await lastValueFrom(
+      this.vendorProxy.send<Business>('createBusiness', createBusinessDto),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return business;
   }
 
-  findAll() {
-    return `This action returns all business`;
+  async findAll() {
+    const businesses = await lastValueFrom(
+      this.vendorProxy.send<Business[]>('findAllBusiness', {}),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return businesses;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} business`;
+  async findOne(id: string) {
+    const business = await lastValueFrom(
+      this.vendorProxy.send<Business>('findOneBusiness', id),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return business;
   }
 
-  update(id: number, updateBusinessDto: UpdateBusinessDto) {
-    return `This action updates a #${id} business`;
+  async update(id: string, updateBusinessDto: UpdateBusinessDto) {
+    const business = await lastValueFrom(
+      this.vendorProxy.send<Business>('updateBusiness', {
+        id,
+        updateBusinessDto,
+      }),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return business;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} business`;
+  async remove(id: string) {
+    await lastValueFrom(
+      this.vendorProxy.send<boolean>('removeBusiness', id),
+    ).catch((error) => {
+      throw new RpcException(error);
+    });
+    return true;
   }
 }

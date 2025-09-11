@@ -26,6 +26,10 @@ export const generateAvatar = () => {
   return `https://api.dicebear.com/9.x/bottts/svg?seed=${names[Math.floor(Math.random() * names.length)]}`;
 };
 
+export const generateLogo = (businessName: string) => {
+  return `https://placehold.co/600x400EEE/31343C?font=raleway&text=${businessName}`;
+};
+
 export const generateEmailBody = (
   templateName: string,
   data: Record<string, any>,

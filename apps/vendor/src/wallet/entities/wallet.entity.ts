@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { WalletTransaction } from './wallet-transaction.entity';
-import { WalletStatusEnum } from '../../utils /constants';
+import { WalletCurrencyEnum, WalletStatusEnum } from '../../utils /constants';
 import { Business } from '../../business/entities/business.entity';
 
 @Entity()
@@ -38,8 +38,11 @@ export class Wallet extends BaseEntity {
   })
   status: WalletStatusEnum;
 
-  @Column()
-  currency: string;
+  @Column({
+    type: 'text',
+    default: WalletCurrencyEnum.NGN,
+  })
+  currency: WalletCurrencyEnum;
 
   @CreateDateColumn()
   createdAt: Date;

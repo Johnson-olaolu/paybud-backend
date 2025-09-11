@@ -19,17 +19,19 @@ export class BusinessController {
   }
 
   @MessagePattern('findOneBusiness')
-  findOne(@Payload() id: number) {
+  findOne(@Payload() id: string) {
     return this.businessService.findOne(id);
   }
 
   @MessagePattern('updateBusiness')
-  update(@Payload() updateBusinessDto: UpdateBusinessDto) {
-    return this.businessService.update(updateBusinessDto.id, updateBusinessDto);
+  update(
+    @Payload() data: { id: string; updateBusinessDto: UpdateBusinessDto },
+  ) {
+    return this.businessService.update(data.id, data.updateBusinessDto);
   }
 
   @MessagePattern('removeBusiness')
-  remove(@Payload() id: number) {
+  remove(@Payload() id: string) {
     return this.businessService.remove(id);
   }
 }
