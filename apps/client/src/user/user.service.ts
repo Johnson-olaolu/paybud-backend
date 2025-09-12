@@ -11,6 +11,8 @@ import { Cache } from 'cache-manager';
 import { ClientProxy } from '@nestjs/microservices';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { generateEmailBody } from '../utils/misc';
+import { EnvironmentVariables } from '../config/env.config';
+import { ConfigService } from '@nestjs/config';
 
 //  ${header({title: 'Gift Card Purchase Successful', username: `👋`})}
 
@@ -21,6 +23,7 @@ export class UserService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(RABBITMQ_QUEUES.NOTIFICATION)
     private notificationProxy: ClientProxy,
+    private configService: ConfigService<EnvironmentVariables>,
   ) {}
 
   async emailGetToken(email: string) {
@@ -35,8 +38,12 @@ export class UserService {
     });
     const tokenHash = await bcrypt.hash(token, 3);
     const key = `client:${user.id}:email_token`;
-    console.log({ key, token, tokenHash });
-    await this.cacheManager.set(key, tokenHash, 1800); // 30 minutes in seconds
+    const res = await this.cacheManager.set(
+      key,
+      tokenHash,
+      this.configService.get('PASSWORD_EXPIRATION_TIME'),
+    );
+    console.log({ key, token, tokenHash, res });
     const body = generateEmailBody('login-token', {
       name: user.fullName || '👋',
       token,
