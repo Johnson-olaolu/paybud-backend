@@ -131,7 +131,7 @@ export class AuthService {
     await this.cacheManager.set(
       cacheKey,
       newCacheValue,
-      this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION'),
+      this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION') * 100,
     );
     return {
       accessToken,
