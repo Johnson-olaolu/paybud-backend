@@ -11,6 +11,18 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+interface PaystackDetails {
+  email: string;
+  integration: number;
+  domain: string;
+  customer_code: string;
+  id: number;
+  identified: boolean;
+  identifications: null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -35,6 +47,12 @@ export class User extends BaseEntity {
 
   @Column({ default: false })
   isRegistered: boolean;
+
+  @Column({
+    type: 'json',
+    default: {},
+  })
+  payStackDetails: PaystackDetails;
 
   @CreateDateColumn()
   createdAt: Date;

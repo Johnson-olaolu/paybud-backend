@@ -14,6 +14,18 @@ import { Wallet } from '../../wallet/entities/wallet.entity';
 import { User } from '../../user/entities/user.entity';
 import { BusinessProfile } from './business-profile.entity';
 
+interface PaystackDetails {
+  email: string;
+  integration: number;
+  domain: string;
+  customer_code: string;
+  id: number;
+  identified: boolean;
+  identifications: null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 @Entity()
 export class Business extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -31,6 +43,12 @@ export class Business extends BaseEntity {
 
   @OneToMany(() => Wallet, (wallet) => wallet.business)
   wallets: Relation<Wallet>[];
+
+  @Column({
+    type: 'json',
+    default: {},
+  })
+  payStackDetails: PaystackDetails;
 
   @CreateDateColumn()
   createdAt: Date;

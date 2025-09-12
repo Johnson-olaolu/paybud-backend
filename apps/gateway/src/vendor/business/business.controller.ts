@@ -12,10 +12,11 @@ import { BusinessService } from './business.service';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
+@ApiTags('Vendor Business')
 @Controller('vendor/business')
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}

@@ -9,6 +9,7 @@ import { EnvironmentVariables, validateEnv } from './config/env.config';
 import { UserModule } from './user/user.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
+import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import KeyvRedis from '@keyv/redis';
     RabbitmqModule,
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.NOTIFICATION }),
     UserModule,
+    ServicesModule,
   ],
   controllers: [ClientController],
   providers: [ClientService],

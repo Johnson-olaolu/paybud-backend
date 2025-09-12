@@ -90,6 +90,14 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   FRONTEND_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  PAYSTACK_SECRET_KEY: string;
+
+  @IsString()
+  @IsNotEmpty()
+  PAYSTACK_BASE_URL: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

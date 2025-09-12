@@ -31,4 +31,20 @@ export class CreateBusinessDto {
   @IsEmail()
   @IsOptional()
   contactEmail?: string;
+
+  @IsString()
+  @IsOptional()
+  businessAccountName: string;
+
+  @IsString()
+  @IsOptional()
+  businessAccountNumber: string;
+
+  @IsString()
+  @IsOptional()
+  businessBankCode: string;
+
+  // @IsString()
+  // @IsOptional()
+  // businessCurrency: string;
 }

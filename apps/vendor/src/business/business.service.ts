@@ -12,6 +12,7 @@ import { BusinessProfile } from './entities/business-profile.entity';
 import { UserService } from '../user/user.service';
 import { generateLogo } from '../utils /misc';
 import { WalletService } from '../wallet/wallet.service';
+import { PaystackService } from '../services/paystack/paystack.service';
 
 @Injectable()
 export class BusinessService {
@@ -23,6 +24,7 @@ export class BusinessService {
     private readonly userService: UserService,
     private readonly dataSource: DataSource,
     private readonly walletService: WalletService,
+    private readonly paystackService: PaystackService,
   ) {}
 
   async create(createBusinessDto: CreateBusinessDto) {
@@ -39,6 +41,12 @@ export class BusinessService {
         contactEmail: createBusinessDto.contactEmail,
         description: createBusinessDto.description,
       });
+      const paystackCustomer = await this.paystackService.createCustomer(
+        user.email,
+        user.fullName,
+        createBusinessDto.name,
+        createBusinessDto.contactPhoneNumber,
+      );
       const savedBusinessProfile =
         await queryRunner.manager.save(businessProfile);
       const business = this.businessRepository.create({
@@ -46,6 +54,7 @@ export class BusinessService {
         profile: savedBusinessProfile,
         users: [user],
         wallets: [wallet],
+        payStackDetails: paystackCustomer.data,
       });
       const savedBusiness = await queryRunner.manager.save(business);
       await queryRunner.commitTransaction();

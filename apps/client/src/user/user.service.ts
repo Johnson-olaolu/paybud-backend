@@ -14,6 +14,7 @@ import { generateEmailBody } from '../utils/misc';
 import { EnvironmentVariables } from '../config/env.config';
 import { ConfigService } from '@nestjs/config';
 import ms, { StringValue } from 'ms';
+import { PaystackService } from '../services/paystack/paystack.service';
 
 //  ${header({title: 'Gift Card Purchase Successful', username: `👋`})}
 
@@ -25,6 +26,7 @@ export class UserService {
     @Inject(RABBITMQ_QUEUES.NOTIFICATION)
     private notificationProxy: ClientProxy,
     private configService: ConfigService<EnvironmentVariables>,
+    private paystackService: PaystackService,
   ) {}
 
   async emailGetToken(email: string) {
@@ -71,24 +73,37 @@ export class UserService {
       throw new BadRequestException('Invalid token');
     }
     await this.cacheManager.del(key);
-    if (!user.isRegistered) {
-      user.isRegistered = true;
-      const body = generateEmailBody('first-time-user', {
-        name: user.fullName || '👋',
-        helpCenterUrl: 'https://paybud.com/help-center',
-      });
-      this.notificationProxy.emit('sendEmail', {
-        email: user.email,
-        subject: 'Welcome to PayBud!',
-        body,
-      });
-      await user.save();
-    }
     return user;
   }
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    const user = await this.findOne(createUserDto.userId);
+    if (user.isRegistered) {
+      throw new BadRequestException('User already registered');
+    }
+    user.fullName = createUserDto.fullName;
+    user.userName = createUserDto.userName;
+    user.phoneNumber = createUserDto.phoneNumber;
+    user.profileImage = createUserDto.avatarUrl;
+    const payStackDetails = await this.paystackService.createCustomer(
+      user.email,
+      user.fullName.split(' ')[0] || ' ',
+      user.fullName.split(' ')[1] || ' ',
+      user.phoneNumber,
+    );
+    user.payStackDetails = payStackDetails.data;
+    user.isRegistered = true;
+    const body = generateEmailBody('first-time-user', {
+      name: user.fullName || '👋',
+      helpCenterUrl: 'https://paybud.com/help-center',
+    });
+    this.notificationProxy.emit('sendEmail', {
+      email: user.email,
+      subject: 'Welcome to PayBud!',
+      body,
+    });
+
+    return user.save();
   }
 
   async findAll() {

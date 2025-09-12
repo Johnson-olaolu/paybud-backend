@@ -12,6 +12,7 @@ import { SeedModule } from './seed/seed.module';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { JwtModule } from '@nestjs/jwt';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ServicesModule } from './services/services.module';
 import KeyvRedis from '@keyv/redis';
 
 @Module({
@@ -51,6 +52,7 @@ import KeyvRedis from '@keyv/redis';
     WalletModule,
     BusinessModule,
     SeedModule,
+    ServicesModule,
   ],
   controllers: [VendorController],
   providers: [VendorService],
