@@ -13,6 +13,7 @@ import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { generateEmailBody } from '../utils/misc';
 import { EnvironmentVariables } from '../config/env.config';
 import { ConfigService } from '@nestjs/config';
+import ms, { StringValue } from 'ms';
 
 //  ${header({title: 'Gift Card Purchase Successful', username: `👋`})}
 
@@ -38,12 +39,11 @@ export class UserService {
     });
     const tokenHash = await bcrypt.hash(token, 3);
     const key = `client:${user.id}:email_token`;
-    const res = await this.cacheManager.set(
+    await this.cacheManager.set(
       key,
       tokenHash,
-      this.configService.get('PASSWORD_EXPIRATION_TIME'),
+      ms(this.configService.get<StringValue>('PASSWORD_EXPIRATION_TIME')!),
     );
-    console.log({ key, token, tokenHash, res });
     const body = generateEmailBody('login-token', {
       name: user.fullName || '👋',
       token,
@@ -91,12 +91,17 @@ export class UserService {
     return 'This action adds a new user';
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll() {
+    const users = await this.userRepository.find();
+    return users;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new BadRequestException(`User not found`);
+    }
+    return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

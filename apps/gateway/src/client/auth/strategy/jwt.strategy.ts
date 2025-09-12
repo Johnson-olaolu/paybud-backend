@@ -27,7 +27,6 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'client-jwt') {
   }
   async validate(payload: JwtPayload) {
     const { sub, tokenId } = payload;
-
     const cachedTokens =
       (await this.cacheManager.get<string[]>(`tokens:${sub}`)) || [];
     if (!cachedTokens.includes(tokenId)) {

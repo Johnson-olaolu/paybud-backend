@@ -91,8 +91,9 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   FRONTEND_URL: string;
 
-  @IsNumber()
-  PASSWORD_EXPIRATION_TIME: number;
+  @IsString()
+  @IsNotEmpty()
+  PASSWORD_EXPIRATION_TIME: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

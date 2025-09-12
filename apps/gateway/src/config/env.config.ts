@@ -30,11 +30,11 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   JWT_SECRET_KEY: string;
 
-  @IsNumber()
-  JWT_ACCESS_TOKEN_EXPIRATION: number;
+  @IsString()
+  JWT_ACCESS_TOKEN_EXPIRATION: string;
 
-  @IsNumber()
-  JWT_REFRESH_TOKEN_EXPIRATION: number;
+  @IsString()
+  JWT_REFRESH_TOKEN_EXPIRATION: string;
 
   @IsString()
   REDIS_PORT: string;

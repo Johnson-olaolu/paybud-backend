@@ -21,7 +21,6 @@ export class UserController {
 
   @MessagePattern('loginWithEmail')
   loginWithEmail(@Payload() emailLoginDto: EmailLoginDto) {
-    console.log({ emailLoginDto });
     return this.userService.loginWithEmail(
       emailLoginDto.email,
       emailLoginDto.token,

@@ -17,6 +17,7 @@ import { GoogleAuthService } from '../../services/google/google-auth.service';
 import { RegistrationTypeEnum } from '../../utils/constants';
 import { FacebookLoginDto } from './dto/facebook-login.dto';
 import { FacebookAuthService } from '../../services/facebook/facebook.auth.service';
+import ms, { StringValue } from 'ms';
 
 @Injectable()
 export class AuthService {
@@ -86,7 +87,7 @@ export class AuthService {
       console.log(error);
       throw new RpcException(error);
     });
-    await this.cacheManager.set(cacheKey, user, 300); // Cache for 5 minutes
+    await this.cacheManager.set(cacheKey, user, ms('5m')); // Cache for 5 minutes
     return user;
   }
 
@@ -131,7 +132,7 @@ export class AuthService {
     await this.cacheManager.set(
       cacheKey,
       newCacheValue,
-      this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION') * 100,
+      ms(this.configService.get<StringValue>('JWT_REFRESH_TOKEN_EXPIRATION')!),
     );
     return {
       accessToken,
@@ -222,7 +223,7 @@ export class AuthService {
     await this.cacheManager.set(
       cacheKey,
       newCacheValue,
-      this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION'),
+      ms(this.configService.get<StringValue>('JWT_REFRESH_TOKEN_EXPIRATION')!),
     );
   }
 }

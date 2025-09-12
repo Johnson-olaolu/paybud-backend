@@ -23,6 +23,7 @@ import { Cache } from 'cache-manager';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { RegistrationTypeEnum } from '../utils /constants';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import ms from 'ms';
 
 @Injectable()
 export class UserService {
@@ -90,7 +91,7 @@ export class UserService {
       await this.cacheManager.set(
         `email-verification-token-${user.id}`,
         newToken,
-        1800,
+        ms('30m'),
       ); // 30 minutes
     }
 
@@ -115,7 +116,7 @@ export class UserService {
     await this.cacheManager.set(
       `email-verification-token-${user.id}`,
       token,
-      1800,
+      ms('30m'),
     ); // 30 minutes
     const body = generateEmailBody('verify-email', {
       name: user.fullName || '',

@@ -10,6 +10,7 @@ import { Cache } from 'cache-manager';
 import { generateRandomString } from '../../utils/misc';
 import { JwtService } from '@nestjs/jwt';
 import { EnvironmentVariables } from '../../config/env.config';
+import ms, { StringValue } from 'ms';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +26,6 @@ export class AuthService {
   }
 
   async loginWithEmail(emailLoginDto: EmailLoginDto) {
-    console.log({ emailLoginDto });
     const user = await lastValueFrom(
       this.clientProxy.send<ClientUser>('loginWithEmail', emailLoginDto),
     ).catch((err) => {
@@ -36,10 +36,11 @@ export class AuthService {
 
   async getUser(userId: string) {
     const user = await lastValueFrom<ClientUser>(
-      this.clientProxy.send('getUser', userId),
+      this.clientProxy.send('findOneUser', userId),
     ).catch((err) => {
       throw new RpcException(err);
     });
+    console.log({ user });
     return user;
   }
 
@@ -53,7 +54,7 @@ export class AuthService {
       },
       {
         secret: this.configService.get('JWT_SECRET_KEY'),
-        expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION'),
+        expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION'),
       },
     );
 
@@ -63,7 +64,7 @@ export class AuthService {
     await this.cacheManager.set(
       cacheKey,
       newCacheValue,
-      this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION'),
+      ms(this.configService.get<StringValue>('JWT_REFRESH_TOKEN_EXPIRATION')!),
     );
     return {
       accessToken,
