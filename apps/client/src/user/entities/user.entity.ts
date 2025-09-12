@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { Exclude, instanceToPlain } from 'class-transformer';
 import {
   BaseEntity,
   BeforeInsert,
@@ -48,6 +49,7 @@ export class User extends BaseEntity {
   @Column({ default: false })
   isRegistered: boolean;
 
+  @Exclude({ toPlainOnly: true })
   @Column({
     type: 'json',
     default: {},
@@ -68,5 +70,9 @@ export class User extends BaseEntity {
         'Either email or phone number must be provided.',
       );
     }
+  }
+
+  toJSON() {
+    return instanceToPlain(this);
   }
 }

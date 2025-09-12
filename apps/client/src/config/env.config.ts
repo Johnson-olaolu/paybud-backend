@@ -94,6 +94,14 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   PASSWORD_EXPIRATION_TIME: string;
+
+  @IsString()
+  @IsNotEmpty()
+  PAYSTACK_SECRET_KEY: string;
+
+  @IsString()
+  @IsNotEmpty()
+  PAYSTACK_BASE_URL: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {
