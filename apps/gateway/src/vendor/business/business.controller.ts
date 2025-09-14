@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Sse,
 } from '@nestjs/common';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto } from './dto/create-business.dto';
@@ -29,6 +30,11 @@ export class BusinessController {
       message: 'Business Created Successfully',
       data,
     };
+  }
+
+  @Sse('register-business/:ownerId')
+  registerBusiness(@Param('ownerId') ownerId: string) {
+    return this.businessService.subscribeToBusinessVerification(ownerId);
   }
 
   @Get()

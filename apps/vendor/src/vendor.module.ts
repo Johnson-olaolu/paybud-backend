@@ -14,6 +14,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ServicesModule } from './services/services.module';
 import KeyvRedis from '@keyv/redis';
+import { BullModule } from '@nestjs/bullmq';
+import { TransactionModule } from './transaction/transaction.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -45,14 +48,33 @@ import KeyvRedis from '@keyv/redis';
       },
       isGlobal: true,
     }),
+    BullModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get('REDIS_HOST'),
+          port: configService.get('REDIS_PORT'),
+          password: configService.get('REDIS_PASSWORD') ?? undefined,
+          username: configService.get('REDIS_USERNAME') ?? undefined,
+          maxRetriesPerRequest: null, // 🛠️ Prevents creating new clients when a request fails
+          enableOfflineQueue: true, // 🚀 Allow queuing commands when the connection is down
+          retryStrategy: (times) => Math.min(times * 50, 2000),
+        },
+        sharedConnection: true, // ✅ Use a single Redis connection for all queues
+      }),
+      imports: [ConfigModule],
+      inject: [ConfigService],
+    }),
     DatabaseModule,
     RabbitmqModule,
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.NOTIFICATION }),
+    RabbitmqModule.register({ name: RABBITMQ_QUEUES.GATEWAY }),
+    EventEmitterModule.forRoot(),
     UserModule,
     WalletModule,
     BusinessModule,
     SeedModule,
     ServicesModule,
+    TransactionModule,
   ],
   controllers: [VendorController],
   providers: [VendorService],

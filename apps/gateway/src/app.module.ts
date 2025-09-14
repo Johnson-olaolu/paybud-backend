@@ -7,11 +7,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RabbitmqModule } from '@app/rabbitmq';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { EnvironmentVariables, validateEnv } from './config/env.config';
-import { BullBoardModule } from '@bull-board/nestjs';
-import { ExpressAdapter } from '@bull-board/express';
+// import { BullBoardModule } from '@bull-board/nestjs';
+// import { ExpressAdapter } from '@bull-board/express';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ServicesModule } from './services/services.module';
 import KeyvRedis from '@keyv/redis';
+// import basicAuth from 'express-basic-auth';
 
 @Module({
   imports: [
@@ -25,10 +26,14 @@ import KeyvRedis from '@keyv/redis';
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.CLIENT }),
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.VENDOR }),
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.ORDER }),
-    BullBoardModule.forRoot({
-      route: '/queues',
-      adapter: ExpressAdapter,
-    }),
+    // BullBoardModule.forRoot({
+    //   route: '/queues',
+    //   adapter: ExpressAdapter,
+    //   middleware: basicAuth({
+    //     challenge: true,
+    //     users: { admin: 'passwordhere' },
+    //   }),
+    // }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

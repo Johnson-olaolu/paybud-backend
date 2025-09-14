@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsStrongPassword,
   validateSync,
 } from 'class-validator';
 
@@ -61,6 +62,19 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   FRONTEND_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  BULL_ADMIN_USER: string;
+
+  @IsStrongPassword({
+    minLength: 8,
+    minLowercase: 1,
+    minUppercase: 1,
+    minNumbers: 1,
+    minSymbols: 1,
+  })
+  BULL_ADMIN_PASSWORD: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

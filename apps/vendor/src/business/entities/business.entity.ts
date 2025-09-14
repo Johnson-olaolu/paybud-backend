@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToMany,
   OneToOne,
@@ -15,15 +16,27 @@ import { User } from '../../user/entities/user.entity';
 import { BusinessProfile } from './business-profile.entity';
 
 interface PaystackDetails {
-  email: string;
-  integration: number;
-  domain: string;
-  customer_code: string;
-  id: number;
-  identified: boolean;
-  identifications: null;
-  createdAt: string;
-  updatedAt: string;
+  customer: {
+    email: string;
+    integration: number;
+    domain: string;
+    customer_code: string;
+    id: number;
+    identified: boolean;
+    identifications: null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  recipient: {
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+interface KYC {
+  type: 'nin' | 'bvn' | 'passport' | 'driver_license';
+  value: string;
+  status: 'pending' | 'verified' | 'rejected';
 }
 
 @Entity()
@@ -33,6 +46,10 @@ export class Business extends BaseEntity {
 
   @Column()
   name: string;
+
+  @OneToOne(() => User, { nullable: false })
+  @JoinColumn()
+  owner: Relation<User>;
 
   @OneToOne(() => BusinessProfile, { cascade: true })
   @JoinColumn()
@@ -45,10 +62,22 @@ export class Business extends BaseEntity {
   wallets: Relation<Wallet>[];
 
   @Column({
+    default: false,
+  })
+  isVerified: boolean;
+
+  @Column({ unique: true, nullable: true })
+  @Index()
+  payStackCustomerCode: string;
+
+  @Column({
     type: 'json',
     default: {},
   })
   payStackDetails: PaystackDetails;
+
+  @Column({ type: 'json', default: {} })
+  KYC: KYC;
 
   @CreateDateColumn()
   createdAt: Date;

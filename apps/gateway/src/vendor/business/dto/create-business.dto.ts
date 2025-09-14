@@ -1,10 +1,12 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsNumberString,
   IsOptional,
   IsPhoneNumber,
   IsString,
   IsUUID,
+  Length,
 } from 'class-validator';
 
 export class CreateBusinessDto {
@@ -23,12 +25,25 @@ export class CreateBusinessDto {
   @IsOptional()
   address?: string;
 
-  @IsString()
   @IsPhoneNumber()
-  @IsOptional()
   contactPhoneNumber?: string;
 
   @IsEmail()
-  @IsOptional()
-  contactEmail?: string;
+  contactEmail: string;
+
+  @IsString()
+  @IsNotEmpty()
+  businessAccountName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  businessAccountNumber: string;
+
+  @IsString()
+  @IsNotEmpty()
+  businessBankCode: string;
+
+  @IsNumberString()
+  @Length(11, 11)
+  businessBVN: string;
 }

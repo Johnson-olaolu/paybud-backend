@@ -43,3 +43,11 @@ export const generateEmailBody = (
 
   return compiledTemplate({ ...data });
 };
+
+export const getNamesFromFullName = (fullName: string) => {
+  const names = fullName.split(' ');
+  const firstName = names[0];
+  const middleName = names.length > 2 ? names.slice(1, -1).join(' ') : '';
+  const lastName = names.length > 1 ? names[names.length - 1] : '';
+  return { firstName, middleName, lastName };
+};

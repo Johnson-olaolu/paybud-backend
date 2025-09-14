@@ -53,3 +53,7 @@ export enum WalletCurrencyEnum {
   // TZS = 'TZS',
   // RWF = 'RWF',
 }
+
+export const JOB_NAMES = {
+  CREATE_BUSINESS: 'CREATE_BUSINESS',
+};

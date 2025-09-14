@@ -13,6 +13,7 @@ import {
 import { WalletTransaction } from './wallet-transaction.entity';
 import { WalletCurrencyEnum, WalletStatusEnum } from '../../utils /constants';
 import { Business } from '../../business/entities/business.entity';
+import { WalletVba } from './wallet-vba.entity';
 
 @Entity()
 @Index(['business', 'currency'], { unique: true })
@@ -28,6 +29,9 @@ export class Wallet extends BaseEntity {
     type: 'money',
   })
   balance: number;
+
+  @OneToMany(() => WalletVba, (vba) => vba.wallet)
+  vbaAccounts: Relation<WalletVba>[];
 
   @OneToMany(() => WalletTransaction, (transaction) => transaction.wallet)
   transactions: Relation<WalletTransaction>[];

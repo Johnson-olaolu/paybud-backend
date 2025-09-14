@@ -3,6 +3,7 @@ import { PaystackService } from './paystack.service';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from '../../config/env.config';
+import { PaystackController } from './paystack.controller';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EnvironmentVariables } from '../../config/env.config';
       },
     }),
   ],
+  controllers: [PaystackController],
   providers: [PaystackService],
   exports: [PaystackService],
 })

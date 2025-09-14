@@ -1,18 +1,21 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
-  InternalServerErrorException,
+  // InternalServerErrorException,
 } from '@nestjs/common';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Business } from './entities/business.entity';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { BusinessProfile } from './entities/business-profile.entity';
-import { UserService } from '../user/user.service';
-import { generateLogo } from '../utils /misc';
-import { WalletService } from '../wallet/wallet.service';
-import { PaystackService } from '../services/paystack/paystack.service';
+import { Queue } from 'bullmq';
+import { JOB_NAMES } from '../utils /constants';
+import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+import { ClientProxy } from '@nestjs/microservices';
+import { OnEvent } from '@nestjs/event-emitter';
+import { InjectQueue } from '@nestjs/bullmq';
 
 @Injectable()
 export class BusinessService {
@@ -21,51 +24,69 @@ export class BusinessService {
     private readonly businessRepository: Repository<Business>,
     @InjectRepository(BusinessProfile)
     private readonly businessProfileRepository: Repository<BusinessProfile>,
-    private readonly userService: UserService,
-    private readonly dataSource: DataSource,
-    private readonly walletService: WalletService,
-    private readonly paystackService: PaystackService,
+    @InjectQueue(JOB_NAMES.CREATE_BUSINESS)
+    private businessQueue: Queue,
+    @Inject(RABBITMQ_QUEUES.GATEWAY) private gatewayProxy: ClientProxy,
   ) {}
 
   async create(createBusinessDto: CreateBusinessDto) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      const user = await this.userService.findOne(createBusinessDto.userId);
-      const wallet = await this.walletService.create({});
-      const businessProfile = this.businessProfileRepository.create({
-        logo: generateLogo(createBusinessDto.name),
-        address: createBusinessDto.address,
-        contactPhoneNumber: createBusinessDto.contactPhoneNumber,
-        contactEmail: createBusinessDto.contactEmail,
-        description: createBusinessDto.description,
-      });
-      const paystackCustomer = await this.paystackService.createCustomer(
-        user.email,
-        user.fullName,
-        createBusinessDto.name,
-        createBusinessDto.contactPhoneNumber,
+    const jobKey = `initiate_business_registration:${createBusinessDto.userId}`;
+    const existingJob = await this.businessQueue.getJob(jobKey);
+    if (existingJob) {
+      throw new BadRequestException(
+        'A business registration is already in progress for this user.',
       );
-      const savedBusinessProfile =
-        await queryRunner.manager.save(businessProfile);
-      const business = this.businessRepository.create({
-        name: createBusinessDto.name,
-        profile: savedBusinessProfile,
-        users: [user],
-        wallets: [wallet],
-        payStackDetails: paystackCustomer.data,
-      });
-      const savedBusiness = await queryRunner.manager.save(business);
-      await queryRunner.commitTransaction();
-      return savedBusiness;
-    } catch (error) {
-      console.log(error);
-      await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException('Failed to create business');
-    } finally {
-      await queryRunner.release();
     }
+    await this.businessQueue.add(
+      'initiate_business_registration',
+      createBusinessDto,
+      { jobId: jobKey, removeOnComplete: true, removeOnFail: false },
+    );
+    return { message: 'Business registration initiated' };
+  }
+
+  @OnEvent('business_validation.failed')
+  async businessValidationFailed(payload: {
+    customerCode: string;
+    reason: string;
+  }) {
+    const { customerCode, reason } = payload;
+    console.log(`Business validation failed for ${customerCode}: ${reason}`);
+    const business = await this.businessRepository.findOne({
+      where: { payStackCustomerCode: customerCode },
+      relations: { owner: true },
+    });
+    if (!business) {
+      throw new BadRequestException('Business not found');
+    }
+    await business?.remove();
+    this.gatewayProxy.emit('businessVerification', {
+      ownerId: business.owner.id,
+      success: false,
+      message: `Business verification failed: ${reason}`,
+    });
+    return true;
+  }
+
+  @OnEvent('business_validation.succeeded')
+  async businessValidationSucceeded(payload: { customerCode: string }) {
+    const { customerCode } = payload;
+    console.log(`Business validation succeeded for ${customerCode}`);
+    const business = await this.businessRepository.findOne({
+      where: { payStackCustomerCode: customerCode },
+      relations: { owner: true },
+    });
+    if (!business) {
+      throw new BadRequestException('Business not found');
+    }
+    business.isVerified = true;
+    await business.save();
+    this.gatewayProxy.emit('businessVerification', {
+      ownerId: business.owner.id,
+      success: true,
+      message: 'Business verified successfully',
+    });
+    return true;
   }
 
   async findAll() {

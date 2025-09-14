@@ -221,7 +221,7 @@ export class UserService {
         `Please Login with Oauth : ${user.registrationType}`,
       );
     }
-    if (!user.comparePasswords(authenticateUserDto.password)) {
+    if (user.comparePasswords(authenticateUserDto.password)) {
       return user;
     }
     throw new BadRequestException('Invalid credentials');
