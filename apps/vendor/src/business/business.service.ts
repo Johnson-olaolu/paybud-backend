@@ -1,6 +1,6 @@
 import {
   BadRequestException,
-  Inject,
+  // Inject,
   Injectable,
   // InternalServerErrorException,
 } from '@nestjs/common';
@@ -12,8 +12,8 @@ import { Repository } from 'typeorm';
 import { BusinessProfile } from './entities/business-profile.entity';
 import { Queue } from 'bullmq';
 import { JOB_NAMES } from '../utils /constants';
-import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
-import { ClientProxy } from '@nestjs/microservices';
+// import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+// import { ClientProxy } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bullmq';
 
@@ -26,7 +26,6 @@ export class BusinessService {
     private readonly businessProfileRepository: Repository<BusinessProfile>,
     @InjectQueue(JOB_NAMES.CREATE_BUSINESS)
     private businessQueue: Queue,
-    @Inject(RABBITMQ_QUEUES.GATEWAY) private gatewayProxy: ClientProxy,
   ) {}
 
   async create(createBusinessDto: CreateBusinessDto) {
@@ -60,11 +59,11 @@ export class BusinessService {
       throw new BadRequestException('Business not found');
     }
     await business?.remove();
-    this.gatewayProxy.emit('businessVerification', {
-      ownerId: business.owner.id,
-      success: false,
-      message: `Business verification failed: ${reason}`,
-    });
+    // this.gatewayProxy.emit('businessVerification', {
+    //   ownerId: business.owner.id,
+    //   success: false,
+    //   message: `Business verification failed: ${reason}`,
+    // });
     return true;
   }
 
@@ -81,11 +80,11 @@ export class BusinessService {
     }
     business.isVerified = true;
     await business.save();
-    this.gatewayProxy.emit('businessVerification', {
-      ownerId: business.owner.id,
-      success: true,
-      message: 'Business verified successfully',
-    });
+    // this.gatewayProxy.emit('businessVerification', {
+    //   ownerId: business.owner.id,
+    //   success: true,
+    //   message: 'Business verified successfully',
+    // });
     return true;
   }
 

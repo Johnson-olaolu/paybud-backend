@@ -67,7 +67,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     DatabaseModule,
     RabbitmqModule,
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.NOTIFICATION }),
-    RabbitmqModule.register({ name: RABBITMQ_QUEUES.GATEWAY }),
     EventEmitterModule.forRoot(),
     UserModule,
     WalletModule,

@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { validateEnv } from './config/env.config';
 import { BullModule } from '@nestjs/bullmq';
 import { RabbitmqModule } from '@app/rabbitmq';
+import { DatabaseModule } from '@app/database';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { RabbitmqModule } from '@app/rabbitmq';
       }),
       inject: [ConfigService],
     }),
+    DatabaseModule,
   ],
   controllers: [NotificationController],
   providers: [NotificationService],

@@ -5,8 +5,6 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from './config/env.config';
 import { RpcExceptionFilter } from './utils/rpc.exception';
-import { RabbitmqService } from '@app/rabbitmq';
-import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { configureBullMQ } from './config/bullmq.config';
 
 async function bootstrap() {
@@ -23,12 +21,5 @@ async function bootstrap() {
       `http://localhost:${app.get(ConfigService<EnvironmentVariables>).get('PORT')}/documentation`,
     ),
   );
-
-  const rabbitmqService = app.get<RabbitmqService>(RabbitmqService);
-  const microservice = await NestFactory.createMicroservice(AppModule, {
-    ...rabbitmqService.getOptions(RABBITMQ_QUEUES.GATEWAY, true),
-  });
-  microservice.useGlobalPipes(new ValidationPipe());
-  await microservice.listen();
 }
 bootstrap();

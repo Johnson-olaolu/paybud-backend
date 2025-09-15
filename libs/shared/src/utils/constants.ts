@@ -2,7 +2,6 @@ import { JOB_NAMES as NOTIFICATION_JOB_NAMES } from '../../../../apps/notificati
 import { JOB_NAMES as VENDOR_JOB_NAMES } from '../../../../apps/vendor/src/utils /constants';
 
 export const RABBITMQ_QUEUES = {
-  GATEWAY: 'GATEWAY',
   VENDOR: 'VENDOR',
   FILE: 'FILE',
   NOTIFICATION: 'NOTIFICATION',

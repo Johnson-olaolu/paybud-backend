@@ -11,6 +11,7 @@ import { EnvironmentVariables, validateEnv } from './config/env.config';
 // import { ExpressAdapter } from '@bull-board/express';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ServicesModule } from './services/services.module';
+import { NotificationModule } from './notification/notification.module';
 import KeyvRedis from '@keyv/redis';
 // import basicAuth from 'express-basic-auth';
 
@@ -51,6 +52,7 @@ import KeyvRedis from '@keyv/redis';
     }),
     CacheModule.register({ isGlobal: true }),
     ServicesModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

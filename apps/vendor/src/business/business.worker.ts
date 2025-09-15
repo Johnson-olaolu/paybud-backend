@@ -11,9 +11,9 @@ import { Business } from './entities/business.entity';
 import { WalletService } from '../wallet/wallet.service';
 import { generateLogo, getNamesFromFullName } from '../utils /misc';
 import { ValidateBusinessDto } from './dto/validate-business.dto';
-import { Inject } from '@nestjs/common';
-import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
-import { ClientProxy } from '@nestjs/microservices';
+// import { Inject } from '@nestjs/common';
+// import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+// import { ClientProxy } from '@nestjs/microservices';
 
 @Processor(JOB_NAMES.CREATE_BUSINESS)
 export class BusinessWorker extends WorkerHost {
@@ -26,7 +26,6 @@ export class BusinessWorker extends WorkerHost {
     private readonly walletService: WalletService,
     private readonly paystackService: PaystackService,
     private readonly userService: UserService,
-    @Inject(RABBITMQ_QUEUES.GATEWAY) private gatewayProxy: ClientProxy,
   ) {
     super();
   }
@@ -126,12 +125,12 @@ export class BusinessWorker extends WorkerHost {
           return { message: 'Business registration initiated' };
         } catch (error) {
           //send error to gateway
-          this.gatewayProxy.emit('businessVerification', {
-            ownerId: user.id,
-            success: false,
-            message:
-              'Business verification failed: Unable to initiate business registration',
-          });
+          // this.gatewayProxy.emit('businessVerification', {
+          //   ownerId: user.id,
+          //   success: false,
+          //   message:
+          //     'Business verification failed: Unable to initiate business registration',
+          // });
           console.log({ error });
           throw new Error('Failed to initiate business registration');
         }
@@ -148,11 +147,11 @@ export class BusinessWorker extends WorkerHost {
         }
         if (!data.success) {
           await business?.remove();
-          this.gatewayProxy.emit('businessVerification', {
-            ownerId: business.owner.id,
-            success: false,
-            message: data.message,
-          });
+          // this.gatewayProxy.emit('businessVerification', {
+          //   ownerId: business.owner.id,
+          //   success: false,
+          //   message: data.message,
+          // });
         } else {
           const queryRunner = this.dataSource.createQueryRunner();
           await queryRunner.connect();
@@ -175,11 +174,11 @@ export class BusinessWorker extends WorkerHost {
             business.wallets = [wallet];
             await queryRunner.manager.save(business);
             await queryRunner.commitTransaction();
-            this.gatewayProxy.emit('businessVerification', {
-              ownerId: business.owner.id,
-              success: true,
-              message: 'Business verified successfully',
-            });
+            // this.gatewayProxy.emit('businessVerification', {
+            //   ownerId: business.owner.id,
+            //   success: true,
+            //   message: 'Business verified successfully',
+            // });
           } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;
