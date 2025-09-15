@@ -16,6 +16,7 @@ import { JOB_NAMES } from '../utils /constants';
 // import { ClientProxy } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bullmq';
+import { ValidateBusinessDto } from './dto/validate-business.dto';
 
 @Injectable()
 export class BusinessService {
@@ -30,17 +31,16 @@ export class BusinessService {
 
   async create(createBusinessDto: CreateBusinessDto) {
     const jobKey = `initiate_business_registration:${createBusinessDto.userId}`;
-    const existingJob = await this.businessQueue.getJob(jobKey);
-    if (existingJob) {
-      throw new BadRequestException(
-        'A business registration is already in progress for this user.',
-      );
-    }
-    await this.businessQueue.add(
-      'initiate_business_registration',
-      createBusinessDto,
-      { jobId: jobKey, removeOnComplete: true, removeOnFail: false },
-    );
+    await this.businessQueue
+      .add('initiate_business_registration', createBusinessDto, {
+        jobId: jobKey,
+      })
+      .catch((error) => {
+        throw new BadRequestException(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          (error?.message as string) || 'Failed to queue job',
+        );
+      });
     return { message: 'Business registration initiated' };
   }
 
@@ -50,47 +50,57 @@ export class BusinessService {
     reason: string;
   }) {
     const { customerCode, reason } = payload;
-    console.log(`Business validation failed for ${customerCode}: ${reason}`);
-    const business = await this.businessRepository.findOne({
-      where: { payStackCustomerCode: customerCode },
-      relations: { owner: true },
-    });
-    if (!business) {
-      throw new BadRequestException('Business not found');
-    }
-    await business?.remove();
-    // this.gatewayProxy.emit('businessVerification', {
-    //   ownerId: business.owner.id,
-    //   success: false,
-    //   message: `Business verification failed: ${reason}`,
-    // });
+    const jobKey = `complete_business_registration:${customerCode}`;
+    await this.businessQueue
+      .add(
+        'validate-business',
+        {
+          customerCode,
+          message: 'Business verification failed: ' + reason,
+          success: false,
+        } as ValidateBusinessDto,
+        {
+          jobId: jobKey,
+        },
+      )
+      .catch((error) => {
+        throw new BadRequestException(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          (error?.message as string) || 'Failed to queue job',
+        );
+      });
     return true;
   }
 
   @OnEvent('business_validation.succeeded')
   async businessValidationSucceeded(payload: { customerCode: string }) {
     const { customerCode } = payload;
-    console.log(`Business validation succeeded for ${customerCode}`);
-    const business = await this.businessRepository.findOne({
-      where: { payStackCustomerCode: customerCode },
-      relations: { owner: true },
-    });
-    if (!business) {
-      throw new BadRequestException('Business not found');
-    }
-    business.isVerified = true;
-    await business.save();
-    // this.gatewayProxy.emit('businessVerification', {
-    //   ownerId: business.owner.id,
-    //   success: true,
-    //   message: 'Business verified successfully',
-    // });
+    const jobKey = `complete_business_registration:${customerCode}`;
+    await this.businessQueue
+      .add(
+        'validate-business',
+        {
+          customerCode,
+          message: 'Business verified successfully',
+          success: true,
+        } as ValidateBusinessDto,
+        {
+          jobId: jobKey,
+        },
+      )
+      .catch((error) => {
+        throw new BadRequestException(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          (error?.message as string) || 'Failed to queue job',
+        );
+      });
     return true;
   }
 
   async findAll() {
     const businesses = await this.businessRepository.find({
       relations: {
+        owner: true,
         profile: true,
         wallets: true,
       },
@@ -103,6 +113,7 @@ export class BusinessService {
     const business = await this.businessRepository.findOne({
       where: { id },
       relations: {
+        owner: true,
         profile: true,
         wallets: true,
       },

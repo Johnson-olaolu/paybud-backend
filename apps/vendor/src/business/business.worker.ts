@@ -9,8 +9,15 @@ import { DataSource, Repository } from 'typeorm';
 import { BusinessProfile } from './entities/business-profile.entity';
 import { Business } from './entities/business.entity';
 import { WalletService } from '../wallet/wallet.service';
-import { generateLogo, getNamesFromFullName } from '../utils /misc';
+import {
+  generateEmailBody,
+  generateLogo,
+  getNamesFromFullName,
+} from '../utils /misc';
 import { ValidateBusinessDto } from './dto/validate-business.dto';
+import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+import { Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 // import { Inject } from '@nestjs/common';
 // import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 // import { ClientProxy } from '@nestjs/microservices';
@@ -26,6 +33,8 @@ export class BusinessWorker extends WorkerHost {
     private readonly walletService: WalletService,
     private readonly paystackService: PaystackService,
     private readonly userService: UserService,
+    @Inject(RABBITMQ_QUEUES.NOTIFICATION)
+    private notificationProxy: ClientProxy,
   ) {
     super();
   }
@@ -45,6 +54,7 @@ export class BusinessWorker extends WorkerHost {
         await queryRunner.startTransaction();
         const data = job.data as CreateBusinessDto;
         const user = await this.userService.findOne(data.userId);
+        console.log({ user });
         try {
           // Create business and business profile
 
@@ -69,9 +79,9 @@ export class BusinessWorker extends WorkerHost {
           // Create pastack customer and recipient
           const [customerData, recipientData] = await Promise.all([
             this.paystackService.createCustomer({
-              email: data.contactEmail,
-              firstName: user.fullName.split(' ')[0],
-              lastName: user.fullName.split(' ').slice(1).join(' '),
+              email: user.email,
+              firstName: user.fullName,
+              lastName: data.name,
               phoneNumber: data.contactPhoneNumber,
               metadata: {
                 userId: data.userId,
@@ -122,6 +132,7 @@ export class BusinessWorker extends WorkerHost {
             },
           );
           await queryRunner.manager.save(savedBusiness);
+          await queryRunner.commitTransaction();
           return { message: 'Business registration initiated' };
         } catch (error) {
           //send error to gateway
@@ -131,7 +142,8 @@ export class BusinessWorker extends WorkerHost {
           //   message:
           //     'Business verification failed: Unable to initiate business registration',
           // });
-          console.log({ error });
+          console.log(error);
+          await queryRunner.rollbackTransaction();
           throw new Error('Failed to initiate business registration');
         }
         // break;
@@ -172,6 +184,7 @@ export class BusinessWorker extends WorkerHost {
               lastName: customerDetails.data.last_name as string,
             });
             business.wallets = [wallet];
+            console.log({ business });
             await queryRunner.manager.save(business);
             await queryRunner.commitTransaction();
             // this.gatewayProxy.emit('businessVerification', {
@@ -179,6 +192,14 @@ export class BusinessWorker extends WorkerHost {
             //   success: true,
             //   message: 'Business verified successfully',
             // });
+            this.notificationProxy.emit('sendEmail', {
+              email: business.owner.email,
+              subject: 'Business Registration Successful',
+              body: generateEmailBody('business-created', {
+                name: business.owner.fullName || '',
+                businessName: business.name,
+              }),
+            });
           } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;

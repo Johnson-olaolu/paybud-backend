@@ -26,6 +26,8 @@ export class WalletService {
       const vbaData = await this.paystackService.createVBAAccount({
         customerId: createWalletDto.paystackCustomerCode,
       });
+      const wallet = this.walletRepository.create({});
+      const savedWallet = await queryRunner.manager.save(wallet);
       const walletVba = this.walletVbaRepository.create({
         accountName: vbaData.data.account_name,
         accountNumber: vbaData.data.account_number,
@@ -33,14 +35,9 @@ export class WalletService {
         bankCode: '100039', // Paystack code for Titan Bank,
         currency: vbaData.data.currency,
         vbaId: vbaData.data.id,
-        active: true,
-        id: vbaData.data.id,
+        wallet: savedWallet,
       });
-      const savedVba = await queryRunner.manager.save(walletVba);
-      const wallet = this.walletRepository.create({
-        vbaAccounts: [savedVba],
-      });
-      const savedWallet = await queryRunner.manager.save(wallet);
+      await queryRunner.manager.save(walletVba);
       await queryRunner.commitTransaction();
       return savedWallet;
     } catch (error) {

@@ -33,10 +33,10 @@ export class WalletVba extends BaseEntity {
   @Column()
   accountName: string;
 
-  @Column({ default: false })
+  @Column({ default: true })
   isDefault: boolean;
 
-  @Column({ default: false })
+  @Column({ default: true })
   active: boolean;
 
   @Column()

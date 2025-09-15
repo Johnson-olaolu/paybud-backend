@@ -14,6 +14,7 @@ import {
 import { Wallet } from '../../wallet/entities/wallet.entity';
 import { User } from '../../user/entities/user.entity';
 import { BusinessProfile } from './business-profile.entity';
+import { Exclude, instanceToPlain } from 'class-transformer';
 
 interface PaystackDetails {
   customer: {
@@ -66,10 +67,12 @@ export class Business extends BaseEntity {
   })
   isVerified: boolean;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ unique: true, nullable: true })
   @Index()
   payStackCustomerCode: string;
 
+  @Exclude({ toPlainOnly: true })
   @Column({
     type: 'json',
     default: {},
@@ -84,4 +87,8 @@ export class Business extends BaseEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  toJSON() {
+    return instanceToPlain(this);
+  }
 }

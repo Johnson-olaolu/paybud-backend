@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 import {
   PaystackCreateCustomerResponse,
@@ -9,12 +10,15 @@ import {
   PaystackGetCustomerResponse,
 } from './types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EnvironmentVariables } from '../../config/env.config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PaystackService {
   constructor(
     private httpService: HttpService,
     private eventEmitter: EventEmitter2,
+    private configService: ConfigService<EnvironmentVariables>,
   ) {}
 
   async createCustomer(data: {
@@ -35,7 +39,9 @@ export class PaystackService {
     };
     const response = await lastValueFrom(
       this.httpService.post<PaystackCreateCustomerResponse>(url, body),
-    );
+    ).catch((error) => {
+      throw new BadRequestException(error?.response?.data || '');
+    });
     return response.data;
   }
 
@@ -43,7 +49,9 @@ export class PaystackService {
     const url = `/customer/${customerCode}`;
     const response = await lastValueFrom(
       this.httpService.get<PaystackGetCustomerResponse>(url),
-    );
+    ).catch((error) => {
+      throw new BadRequestException(error?.response?.data || '');
+    });
     return response.data;
   }
 
@@ -72,32 +80,39 @@ export class PaystackService {
       type = 'bank_account',
     } = data;
 
-    const body = {
-      account_number,
-      bvn,
-      bank_code: bankCode,
-      first_name: firstName,
-      last_name: lastName,
-      middle_name: middleName,
-      country,
-      type,
-    };
+    let body;
+    if (this.configService.get('NODE_ENV') === 'production') {
+      body = {
+        account_number,
+        bvn,
+        bank_code: bankCode,
+        first_name: firstName,
+        last_name: lastName,
+        middle_name: middleName,
+        country,
+        type,
+      };
+    } else {
+      body = {
+        country: 'NG',
+        type: 'bank_account',
+        account_number: '0111111111',
+        bvn: '22222222221',
+        bank_code: '007',
+        first_name: 'Uchenna',
+        last_name: 'Okoro',
+        middle_name: '',
+      };
+    }
 
-    // const body = {
-    //   country: 'NG',
-    //   type: 'bank_account',
-    //   account_number: '0111111111',
-    //   bvn: '222222222221',
-    //   bank_code: '007',
-    //   first_name: 'Uchenna',
-    //   last_name: 'Okoro',
-    // };
     const response = await lastValueFrom(
       this.httpService.post<{
         status: boolean;
         message: string;
       }>(url, body),
-    );
+    ).catch((error) => {
+      throw new BadRequestException(error?.response?.data || '');
+    });
     return response.data;
   }
 
@@ -128,7 +143,9 @@ export class PaystackService {
     };
     const response = await lastValueFrom(
       this.httpService.post<PaystackCreateCustomerResponse>(url, body),
-    );
+    ).catch((error) => {
+      throw new BadRequestException(error?.response?.data || '');
+    });
     return response.data;
   }
 
@@ -151,14 +168,20 @@ export class PaystackService {
 
   async createVBAAccount(data: { customerId: string; preferredBank?: string }) {
     const url = '/dedicated_account';
-    const { customerId, preferredBank = 'titan-paystack' } = data;
+    const defaultPreferredBank =
+      this.configService.get('NODE_ENV') === 'production'
+        ? 'titan-paystack'
+        : 'test-bank';
+    const { customerId, preferredBank = defaultPreferredBank } = data;
     const body = {
       customer: customerId,
       preferred_bank: preferredBank,
     };
     const response = await lastValueFrom(
       this.httpService.post<PaystackCreateVBAAccountResponse>(url, body),
-    );
+    ).catch((error) => {
+      throw new BadRequestException(error?.response?.data || '');
+    });
     return response.data;
   }
 }

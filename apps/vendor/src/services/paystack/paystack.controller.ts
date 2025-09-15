@@ -8,7 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { PaystackService } from './paystack.service';
-import * as crypto from 'crypto';
+// import * as crypto from 'crypto';
 import { EnvironmentVariables } from '../../config/env.config';
 import { ConfigService } from '@nestjs/config';
 
@@ -27,13 +27,13 @@ export class PaystackController {
   @HttpCode(200)
   @Post('callback')
   handleCallback(@Body() payload: any) {
-    const hash = crypto
-      .createHmac('sha512', this.configService.get('PAYSTACK_SECRET_KEY')!)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-    if (hash !== payload.signature) {
-      throw new BadRequestException('Invalid signature');
-    }
+    // const hash = crypto
+    //   .createHmac('sha512', this.configService.get('PAYSTACK_SECRET_KEY')!)
+    //   .update(JSON.stringify(payload))
+    //   .digest('hex');
+    // if (hash !== payload.signature) {
+    //   throw new BadRequestException('Invalid signature');
+    // }
     switch (payload.event) {
       case 'customeridentification.failed':
         this.paystackService.handleCustomerIdentificationFailed(payload.data);

@@ -87,7 +87,12 @@ export class AuthService {
       console.log(error);
       throw new RpcException(error);
     });
-    await this.cacheManager.set(cacheKey, user, ms('5m')); // Cache for 5 minutes
+    if (!user.isEmailVerified) {
+      throw new BadRequestException('Email not verified');
+    } else {
+      await this.cacheManager.set(cacheKey, user, ms('5m')); // Cache for 5 minutes
+    }
+
     return user;
   }
 
