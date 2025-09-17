@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { NotificationTypeEnum } from '../../utils/constants';
 
 @Entity()
 export class AppNotification extends BaseEntity {
@@ -17,6 +18,17 @@ export class AppNotification extends BaseEntity {
 
   @Column()
   message: string;
+
+  @Column({
+    type: 'text',
+  })
+  clientType: 'vendor' | 'client' | 'admin';
+
+  @Column({
+    type: 'text',
+    default: NotificationTypeEnum.INFO,
+  })
+  type: NotificationTypeEnum;
 
   @Column()
   action: string;

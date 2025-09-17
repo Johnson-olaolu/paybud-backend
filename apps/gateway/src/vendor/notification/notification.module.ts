@@ -1,15 +1,15 @@
-import { Global, Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
+import { Module } from '@nestjs/common';
+import { NotificationService } from './notification.service';
+import { NotificationGateway } from './notification.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from '../../config/env.config';
-import { LocalStrategy } from './strategy/local.strategy';
-import { JWTStrategy } from './strategy/jwt.strategy';
+import { AuthModule } from '../auth/auth.module';
+import { NotificationController } from './notification.controller';
 
-@Global()
 @Module({
   imports: [
+    AuthModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -18,8 +18,7 @@ import { JWTStrategy } from './strategy/jwt.strategy';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JWTStrategy],
-  exports: [AuthService],
+  controllers: [NotificationController],
+  providers: [NotificationGateway, NotificationService],
 })
-export class AuthModule {}
+export class NotificationModule {}

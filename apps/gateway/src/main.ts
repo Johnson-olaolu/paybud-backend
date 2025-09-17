@@ -6,9 +6,18 @@ import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from './config/env.config';
 import { RpcExceptionFilter } from './utils/rpc.exception';
 import { configureBullMQ } from './config/bullmq.config';
+import { RpcExceptionWrapper } from '@app/shared/utils/exeption-wrapper';
+import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+import { RabbitmqService } from '@app/rabbitmq/rabbitmq.service';
+import { RedisIoAdapter } from './config/socketIo.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const rabbitmqService = app.get<RabbitmqService>(RabbitmqService);
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+
+  app.useWebSocketAdapter(redisIoAdapter);
   app.enableCors({
     origin: true,
   });
@@ -21,5 +30,12 @@ async function bootstrap() {
       `http://localhost:${app.get(ConfigService<EnvironmentVariables>).get('PORT')}/documentation`,
     ),
   );
+
+  const microservice = await NestFactory.createMicroservice(AppModule, {
+    ...rabbitmqService.getOptions(RABBITMQ_QUEUES.GATEWAY, true),
+  });
+  microservice.useGlobalPipes(new ValidationPipe());
+  microservice.useGlobalFilters(new RpcExceptionWrapper());
+  await microservice.listen();
 }
 bootstrap();

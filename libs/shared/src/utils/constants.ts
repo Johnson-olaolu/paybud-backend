@@ -8,6 +8,7 @@ export const RABBITMQ_QUEUES = {
   CLIENT: 'CLIENT',
   PAYMENT: 'PAYMENT',
   ORDER: 'ORDER',
+  GATEWAY: 'GATEWAY',
 };
 
 export const APP_JOB_NAMES = {

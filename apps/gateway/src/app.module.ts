@@ -11,8 +11,8 @@ import { EnvironmentVariables, validateEnv } from './config/env.config';
 // import { ExpressAdapter } from '@bull-board/express';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ServicesModule } from './services/services.module';
-import { NotificationModule } from './notification/notification.module';
 import KeyvRedis from '@keyv/redis';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 // import basicAuth from 'express-basic-auth';
 
 @Module({
@@ -22,19 +22,13 @@ import KeyvRedis from '@keyv/redis';
       validate: validateEnv,
       envFilePath: 'apps/gateway/.env',
     }),
+    EventEmitterModule.forRoot(),
     VendorModule,
     ClientModule,
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.CLIENT }),
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.VENDOR }),
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.ORDER }),
-    // BullBoardModule.forRoot({
-    //   route: '/queues',
-    //   adapter: ExpressAdapter,
-    //   middleware: basicAuth({
-    //     challenge: true,
-    //     users: { admin: 'passwordhere' },
-    //   }),
-    // }),
+    RabbitmqModule.register({ name: RABBITMQ_QUEUES.NOTIFICATION }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -52,7 +46,6 @@ import KeyvRedis from '@keyv/redis';
     }),
     CacheModule.register({ isGlobal: true }),
     ServicesModule,
-    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

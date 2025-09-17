@@ -3,3 +3,10 @@ export const JOB_NAMES = {
   APP: 'APP_NOTIFICATION',
   WHATSAPP: 'WHATSAPP_NOTIFICATION',
 };
+
+export enum NotificationTypeEnum {
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  ERROR = 'error',
+}

@@ -9,6 +9,7 @@ import { validateEnv } from './config/env.config';
 import { BullModule } from '@nestjs/bullmq';
 import { RabbitmqModule } from '@app/rabbitmq';
 import { DatabaseModule } from '@app/database';
+import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 
 @Module({
   imports: [
@@ -21,6 +22,9 @@ import { DatabaseModule } from '@app/database';
     WhatsappModule,
     AppModule,
     RabbitmqModule,
+    RabbitmqModule.register({
+      name: RABBITMQ_QUEUES.GATEWAY,
+    }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

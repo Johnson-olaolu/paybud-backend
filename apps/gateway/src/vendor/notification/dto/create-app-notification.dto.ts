@@ -6,7 +6,6 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { NotificationTypeEnum } from '../../utils/constants';
 
 export class CreateAppNotificationDto {
   @IsUUID()
@@ -20,9 +19,9 @@ export class CreateAppNotificationDto {
   @IsNotEmpty()
   action: string;
 
-  @IsEnum(NotificationTypeEnum)
+  @IsEnum(['info', 'success', 'warning', 'error'])
   @IsOptional()
-  type?: NotificationTypeEnum;
+  type?: 'info' | 'success' | 'warning' | 'error';
 
   @IsBoolean()
   @IsOptional()
@@ -33,5 +32,5 @@ export class CreateAppNotificationDto {
   clientType: 'vendor' | 'client' | 'admin';
 
   @IsOptional()
-  data?: any;
+  data: any;
 }

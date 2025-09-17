@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppNotification } from './entitities/app-notifications.entity';
 import { BullModule } from '@nestjs/bullmq';
 import { JOB_NAMES } from '../utils/constants';
+import { AppNotificationWorker } from './app.worker';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { JOB_NAMES } from '../utils/constants';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AppNotificationWorker],
 })
 export class AppModule {}
