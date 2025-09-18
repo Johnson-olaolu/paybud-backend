@@ -11,7 +11,9 @@ export class EmailController {
 
   @MessagePattern('sendEmail')
   async sendEmail(@Payload() sendEmailDto: SendEmailDto) {
-    await this.emailQueue.add('send-email-job', sendEmailDto);
+    await this.emailQueue.add('send-email-job', sendEmailDto, {
+      removeOnComplete: true,
+    });
     return {
       success: true,
       message: 'Email job added to the queue',

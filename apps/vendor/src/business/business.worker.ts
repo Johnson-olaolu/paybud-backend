@@ -18,6 +18,10 @@ import { ValidateBusinessDto } from './dto/validate-business.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import {
+  SendAppNotificationDto,
+  SendEmailNotificationDto,
+} from '@app/shared/dto/notification.dto';
 // import { Inject } from '@nestjs/common';
 // import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 // import { ClientProxy } from '@nestjs/microservices';
@@ -115,7 +119,6 @@ export class BusinessWorker extends WorkerHost {
             customer: customerData.data,
             recipient: recipientData.data,
           };
-
           //validate customer
           const { firstName, middleName, lastName } = getNamesFromFullName(
             data.businessAccountName,
@@ -135,13 +138,17 @@ export class BusinessWorker extends WorkerHost {
           await queryRunner.commitTransaction();
           return { message: 'Business registration initiated' };
         } catch (error) {
-          //send error to gateway
-          // this.gatewayProxy.emit('businessVerification', {
-          //   ownerId: user.id,
-          //   success: false,
-          //   message:
-          //     'Business verification failed: Unable to initiate business registration',
-          // });
+          this.notificationProxy.emit<boolean, SendAppNotificationDto>(
+            'sendNotification',
+            {
+              userId: data.userId,
+              message: `Your business ${data.name} registration failed. Please try again.`,
+              action: 'business-registration:failed',
+              clientType: 'vendor',
+              type: 'error',
+              popup: true,
+            },
+          );
           console.log(error);
           await queryRunner.rollbackTransaction();
           throw new Error('Failed to initiate business registration');
@@ -159,11 +166,17 @@ export class BusinessWorker extends WorkerHost {
         }
         if (!data.success) {
           await business?.remove();
-          // this.gatewayProxy.emit('businessVerification', {
-          //   ownerId: business.owner.id,
-          //   success: false,
-          //   message: data.message,
-          // });
+          this.notificationProxy.emit<boolean, SendAppNotificationDto>(
+            'sendNotification',
+            {
+              userId: business.owner.id,
+              message: `Your business ${business.name} registration failed. Please try again.`,
+              action: 'business-registration:failed',
+              clientType: 'vendor',
+              type: 'error',
+              popup: true,
+            },
+          );
         } else {
           const queryRunner = this.dataSource.createQueryRunner();
           await queryRunner.connect();
@@ -192,14 +205,28 @@ export class BusinessWorker extends WorkerHost {
             //   success: true,
             //   message: 'Business verified successfully',
             // });
-            this.notificationProxy.emit('sendEmail', {
-              email: business.owner.email,
-              subject: 'Business Registration Successful',
-              body: generateEmailBody('business-created', {
-                name: business.owner.fullName || '',
-                businessName: business.name,
-              }),
-            });
+            this.notificationProxy.emit<boolean, SendAppNotificationDto>(
+              'sendNotification',
+              {
+                userId: business.owner.id,
+                message: `Your business ${business.name} has been registered successfully`,
+                action: 'business-registration:success',
+                clientType: 'vendor',
+                type: 'success',
+                popup: true,
+              },
+            );
+            this.notificationProxy.emit<boolean, SendEmailNotificationDto>(
+              'sendEmail',
+              {
+                email: business.owner.email,
+                subject: 'Business Registration Successful',
+                body: generateEmailBody('business-created', {
+                  name: business.owner.fullName || '',
+                  businessName: business.name,
+                }),
+              },
+            );
           } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;
