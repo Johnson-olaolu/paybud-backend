@@ -21,7 +21,7 @@ export class NotificationController {
   notifyUser(
     @Payload() data: { userId: string; notifications: AppNotification[] },
   ) {
-    this.notificationGateway.sendToUser(data.userId, data.notifications);
+    this.notificationService.emitToUser(data.userId, data.notifications);
   }
 
   @MessagePattern('vendor.popupNotification')

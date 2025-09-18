@@ -16,31 +16,43 @@ export class AppController {
 
   @MessagePattern('sendNotification')
   async createNotification(data: CreateAppNotificationDto) {
-    await this.appQueue.add('sendNotification', data);
+    await this.appQueue.add('createNotification', data, {
+      removeOnComplete: true,
+    });
   }
 
   @MessagePattern('getUserNotifications')
   async getUserNotifications(data: GetUserNotificationsDto) {
-    await this.appQueue.add('getUserNotifications', data);
+    await this.appQueue.add('getUserNotifications', data, {
+      removeOnComplete: true,
+    });
   }
 
   @MessagePattern('markNotificationAsRead')
   async markAsRead(data: { notificationId: string }) {
-    await this.appQueue.add('markNotificationAsRead', data);
+    await this.appQueue.add('markNotificationAsRead', data, {
+      removeOnComplete: true,
+    });
   }
 
   @MessagePattern('markAllNotificationsAsRead')
   async markAllAsRead(data: { userId: string }) {
-    await this.appQueue.add('markAllNotificationsAsRead', data);
+    await this.appQueue.add('markAllNotificationsAsRead', data, {
+      removeOnComplete: true,
+    });
   }
 
   @MessagePattern('deleteNotification')
   async deleteNotification(data: { notificationId: string }) {
-    await this.appQueue.add('deleteNotification', data);
+    await this.appQueue.add('deleteNotification', data, {
+      removeOnComplete: true,
+    });
   }
 
   @MessagePattern('deleteAllNotifications')
   async deleteAllNotifications(data: { userId: string }) {
-    await this.appQueue.add('deleteAllNotifications', data);
+    await this.appQueue.add('deleteAllNotifications', data, {
+      removeOnComplete: true,
+    });
   }
 }

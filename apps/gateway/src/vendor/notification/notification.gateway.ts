@@ -81,6 +81,14 @@ export class NotificationGateway
     this.notificationService.fetchUserNotifications(data);
   }
 
+  @SubscribeMessage('notifications:load2')
+  loadNotifications2(
+    @MessageBody() data: GetUserNotificationsDto,
+    // @ConnectedSocket() client: Socket,
+  ) {
+    this.sendToUser(data.userId, []);
+  }
+
   @SubscribeMessage('notifications:read')
   readNotifications(
     @MessageBody() data: { notificationId: string; userId: string },

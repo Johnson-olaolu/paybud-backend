@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from './config/env.config';
 import { RpcExceptionFilter } from './utils/rpc.exception';
 import { configureBullMQ } from './config/bullmq.config';
-import { RpcExceptionWrapper } from '@app/shared/utils/exeption-wrapper';
+// import { RpcExceptionWrapper } from '@app/shared/utils/exeption-wrapper';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { RabbitmqService } from '@app/rabbitmq/rabbitmq.service';
 import { RedisIoAdapter } from './config/socketIo.config';
@@ -25,17 +25,26 @@ async function bootstrap() {
   configureBullMQ(app, '/queues');
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new RpcExceptionFilter());
+  app.connectMicroservice(
+    rabbitmqService.getOptions(RABBITMQ_QUEUES.GATEWAY, true),
+  );
+  await app.startAllMicroservices();
   await app.listen(app.get(ConfigService).get('PORT') ?? 3000, '0.0.0.0', () =>
     new Logger('Documentation').log(
       `http://localhost:${app.get(ConfigService<EnvironmentVariables>).get('PORT')}/documentation`,
     ),
   );
-
-  const microservice = await NestFactory.createMicroservice(AppModule, {
-    ...rabbitmqService.getOptions(RABBITMQ_QUEUES.GATEWAY, true),
-  });
-  microservice.useGlobalPipes(new ValidationPipe());
-  microservice.useGlobalFilters(new RpcExceptionWrapper());
-  await microservice.listen();
 }
 bootstrap();
+
+// const app = await NestFactory.create(NotificationServiceModule);
+// app.enableCors({
+//   origin: true,
+// });
+// const rmqService = app.get<RmqService>(RmqService);
+// app.useGlobalPipes(new ValidationPipe());
+// app.connectMicroservice(
+//   rmqService.getOptions(RABBITMQ_QUEUES.NOTIFICATION_SERVICE, true),
+// );
+// await app.startAllMicroservices();
+// await app.listen(app.get(ConfigService).get('PORT') || 3000);
