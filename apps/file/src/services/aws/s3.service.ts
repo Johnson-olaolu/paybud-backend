@@ -35,7 +35,7 @@ export class S3Service {
         new PutObjectCommand({
           Bucket: bucketName,
           Key: key,
-          Body: file.buffer,
+          Body: Buffer.from(file.buffer),
           ContentType: file.mimetype,
           Metadata: metadata,
         }),

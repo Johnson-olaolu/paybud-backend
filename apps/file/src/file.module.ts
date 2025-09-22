@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { validateEnv } from './config/env.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { File } from './entities/file.entity';
+import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { File } from './entities/file.entity';
     DatabaseModule,
     RabbitmqModule,
     TypeOrmModule.forFeature([File]),
+    ServicesModule,
   ],
   controllers: [FileController],
   providers: [FileService],

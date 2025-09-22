@@ -1,4 +1,5 @@
 import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsFile } from 'nestjs-form-data';
 
 export class CreateFileDto {
   @IsString()
@@ -15,5 +16,6 @@ export class CreateFileDto {
   @IsUUID()
   ownerId: string;
 
+  @IsFile()
   file: Express.Multer.File;
 }

@@ -1,3 +1,4 @@
+import { Exclude, instanceToPlain } from 'class-transformer';
 import {
   BaseEntity,
   Column,
@@ -27,16 +28,19 @@ export class File extends BaseEntity {
   @Column()
   mimeType: string;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ nullable: true })
   s3Key: string;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ nullable: true })
   s3ETag: string;
 
   @Column({ nullable: true })
   url: string;
 
-  @Column()
+  @Exclude({ toPlainOnly: true })
+  @Column({ nullable: true })
   s3Bucket: string;
 
   @Column()
@@ -50,6 +54,7 @@ export class File extends BaseEntity {
   @Column()
   size: number;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'timestamptz', nullable: true })
   expirationDate: Date;
 
@@ -58,4 +63,8 @@ export class File extends BaseEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  toJSON() {
+    return instanceToPlain(this);
+  }
 }

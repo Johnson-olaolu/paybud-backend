@@ -29,6 +29,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.VENDOR }),
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.ORDER }),
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.NOTIFICATION }),
+    RabbitmqModule.register({ name: RABBITMQ_QUEUES.FILE }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

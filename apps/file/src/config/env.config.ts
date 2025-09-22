@@ -101,7 +101,7 @@ export class EnvironmentVariables {
 
   @IsNumber()
   @IsOptional()
-  S3_PRESIGN_EXPIRATION = 604800; // default to 7 days
+  S3_PRESIGN_EXPIRATION: number = 604800; // default to 7 days
 }
 
 export function validateEnv(config: Record<string, unknown>) {

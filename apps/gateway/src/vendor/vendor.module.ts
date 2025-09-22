@@ -6,6 +6,7 @@ import { RoleModule } from './role/role.module';
 import { UserModule } from './user/user.module';
 import { BusinessModule } from './business/business.module';
 import { NotificationModule } from './notification/notification.module';
+import { FileModule } from './file/file.module';
 
 @Module({
   controllers: [VendorController],
@@ -16,6 +17,7 @@ import { NotificationModule } from './notification/notification.module';
     UserModule,
     BusinessModule,
     NotificationModule,
+    FileModule,
   ],
 })
 export class VendorModule {}
