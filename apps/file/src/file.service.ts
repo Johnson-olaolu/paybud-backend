@@ -7,6 +7,7 @@ import { CreateFileDto } from './dto/create-file.dto';
 import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from './config/env.config';
 import { CreateFilesDto } from './dto/create-files.dto';
+import * as mime from 'mime-types';
 
 @Injectable()
 export class FileService {
@@ -33,7 +34,7 @@ export class FileService {
         size: createFileDto.file.size,
       });
       const savedFile = await queryRunner.manager.save(file);
-      const key = `${createFileDto.ownerType}/${createFileDto.ownerId}/${createFileDto.folder}/${savedFile.id}-${timeStamp}.${savedFile.mimeType}`;
+      const key = `${createFileDto.ownerType}/${createFileDto.ownerId}/${createFileDto.folder}/${savedFile.id}-${timeStamp}.${mime.extension(savedFile.mimeType)}`;
       const metadata = {
         ownerId: createFileDto.ownerId,
         ownerType: createFileDto.ownerType,

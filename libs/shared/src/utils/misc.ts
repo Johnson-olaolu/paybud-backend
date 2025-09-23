@@ -18,7 +18,10 @@ export async function fetchFileById(fileId: string): Promise<File> {
 
   try {
     // Create RabbitMQ client connection
-    const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
+    if (!process.env.RABBITMQ_URL) {
+      throw new Error('RABBITMQ_URL is not defined in environment variables');
+    }
+    const rabbitmqUrl = process.env.RABBITMQ_URL;
 
     client = ClientProxyFactory.create({
       transport: Transport.RMQ,
