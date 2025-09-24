@@ -6,7 +6,7 @@ import {
 } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { RABBITMQ_QUEUES } from './constants';
-import { File } from '../types';
+import { File } from '../types/file';
 
 export function isBcryptHash(str: string) {
   const bcryptRegex = /^\$2[aby]\$[0-9]{2}\$[./A-Za-z0-9]{53}$/;

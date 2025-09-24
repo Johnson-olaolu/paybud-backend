@@ -1,7 +1,6 @@
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { ClientUser } from 'apps/gateway/types/client';
 import { lastValueFrom } from 'rxjs';
 import { EmailLoginDto } from './dto/email-login.dto';
 import { ConfigService } from '@nestjs/config';
@@ -11,6 +10,7 @@ import { generateRandomString } from '../../utils/misc';
 import { JwtService } from '@nestjs/jwt';
 import { EnvironmentVariables } from '../../config/env.config';
 import ms, { StringValue } from 'ms';
+import { ClientUser } from '@app/shared/types/client';
 
 @Injectable()
 export class AuthService {

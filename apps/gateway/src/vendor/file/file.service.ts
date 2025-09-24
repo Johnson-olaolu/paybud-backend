@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CreateFileDto } from './dto/create-file.dto';
 import { lastValueFrom } from 'rxjs';
-import { File } from '@app/shared/types';
+import { File } from '@app/shared/types/file';
 import { fetchFileById } from '@app/shared/utils/misc';
 
 @Injectable()

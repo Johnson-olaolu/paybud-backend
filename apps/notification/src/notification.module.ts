@@ -25,6 +25,9 @@ import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
     RabbitmqModule.register({
       name: RABBITMQ_QUEUES.GATEWAY,
     }),
+    RabbitmqModule.register({
+      name: RABBITMQ_QUEUES.VENDOR,
+    }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

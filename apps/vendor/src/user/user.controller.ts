@@ -37,6 +37,11 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  @MessagePattern('findUserByBusinessId')
+  findUserByBusinessId(@Payload() businessId: string) {
+    return this.userService.getUsersByBusiness(businessId);
+  }
+
   @MessagePattern('findOneUserByEmail')
   findOneByEmail(@Payload() email: string) {
     return this.userService.findOneByEmail(email);

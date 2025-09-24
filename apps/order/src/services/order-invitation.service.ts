@@ -18,9 +18,9 @@ import {
   OrderInviteMediumEnum,
 } from '../utils/constants';
 import { Order } from '../entities/order.entity';
-import { Business } from 'apps/order/types/vendor';
+import { Business } from '@app/shared/types/vendor';
 import { lastValueFrom } from 'rxjs';
-import { ClientUser } from 'apps/order/types/client';
+import { ClientUser } from '@app/shared/types/client';
 import { SendAppNotificationDto } from '@app/shared/dto/notification.dto';
 import { addDays } from 'date-fns';
 import { InjectQueue } from '@nestjs/bullmq';

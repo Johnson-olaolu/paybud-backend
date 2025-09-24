@@ -1,9 +1,9 @@
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { AppNotification } from 'apps/gateway/types/vendor';
 import { Server } from 'socket.io';
 import { GetNotificationsDto } from './dto/get-notifications.dto';
+import { AppNotification } from '@app/shared/types/notification';
 
 @Injectable()
 export class NotificationService {

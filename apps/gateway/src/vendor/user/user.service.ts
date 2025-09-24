@@ -3,7 +3,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { User } from 'apps/gateway/types/vendor';
+import { User } from '@app/shared/types/vendor';
 
 @Injectable()
 export class UserService {

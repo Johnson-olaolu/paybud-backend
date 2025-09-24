@@ -7,11 +7,15 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppNotification } from './entitities/app-notifications.entity';
 import { Repository } from 'typeorm';
-import { CreateAppNotificationDto } from './dto/create-app-notification.dto';
+import {
+  CreateAppNotificationBusinessDto,
+  CreateAppNotificationDto,
+} from './dto/create-app-notification.dto';
 import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
+import { User } from 'apps/notification/types/vendor';
 
 @Injectable()
 export class AppService {
@@ -35,11 +39,27 @@ export class AppService {
   }
 
   async createNotificationToVendor(
-    createAppNotificationBusinessDto: CreateAppNotificationDto,
+    createAppNotificationBusinessDto: CreateAppNotificationBusinessDto,
   ) {
-    const business = await lastValueFrom(
-      vendorProxy.send('', createAppNotificationBusinessDto.vendorId),
+    const users = await lastValueFrom(
+      this.vendorProxy.send<User[]>(
+        'findUserByBusinessId',
+        createAppNotificationBusinessDto.businessId,
+      ),
     );
+    for (const user of users) {
+      const notification = await this.appNotificationRepository.save({
+        ...createAppNotificationBusinessDto,
+        userId: user.id,
+        clientType: 'vendor',
+      });
+      const notifications = await this.getUserNotifications({
+        userId: user.id,
+      });
+      this.sendNotificationsToUser(notifications);
+      if (createAppNotificationBusinessDto.popup)
+        this.sendPopupToUser(notification);
+    }
   }
 
   async getUserNotifications(getUserNotificationsDto: GetUserNotificationsDto) {

@@ -4,7 +4,7 @@ import { UpdateBusinessDto } from './dto/update-business.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { lastValueFrom, Subject } from 'rxjs';
-import { Business } from 'apps/gateway/types/vendor';
+import { Business } from '@app/shared/types/vendor';
 
 @Injectable()
 export class BusinessService {

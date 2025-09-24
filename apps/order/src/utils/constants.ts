@@ -15,6 +15,12 @@ export enum OrderStatusEnum {
   DISPUTED = 'DISPUTED',
 }
 
+export enum OrderItemStatusEnum {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
 export enum InvitationStatusEnum {
   PENDING = 'PENDING',
   ACCEPTED = 'ACCEPTED',

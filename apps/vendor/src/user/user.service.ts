@@ -278,4 +278,14 @@ export class UserService {
     }
     return true;
   }
+
+  async getUsersByBusiness(id: string) {
+    const users = await this.userRepository.findOne({
+      where: { business: { id } },
+      relations: {
+        profile: true,
+      },
+    });
+    return users;
+  }
 }

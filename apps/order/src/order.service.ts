@@ -16,8 +16,8 @@ import { DataSource, Repository } from 'typeorm';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { Business } from '../types/vendor';
-import { ClientUser } from '../types/client';
+import { Business } from '../../../libs/shared/src/types/vendor';
+import { ClientUser } from '../../../libs/shared/src/types/client';
 
 @Injectable()
 export class OrderService {
@@ -87,6 +87,12 @@ export class OrderService {
         endDate: clientCreateOrderDto.endDate,
       });
       const savedOrder = await queryRunner.manager.save(order);
+      await this.orderInvitationService.inviteVendor(
+        savedOrder,
+        client,
+        clientCreateOrderDto.inviteDetails,
+      );
+      await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error?.message);
