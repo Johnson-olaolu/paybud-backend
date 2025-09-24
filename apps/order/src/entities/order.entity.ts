@@ -5,43 +5,44 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Relation,
   UpdateDateColumn,
 } from 'typeorm';
-import { OrderChatMessage } from './order-chat-message.entity';
 import { OrderInvoice } from './order-invoice.entity';
 import { OrderSnapshot } from './order-snapshot.entity';
 import { OrderItem } from './order-item.entity';
 import { BadRequestException } from '@nestjs/common';
 import { OrderStatusEnum } from '../utils/constants';
+import { OrderChat } from '../chat/entities/order-chat.entity';
+import { OrderInvitation } from './order-invitation.entity';
 
 @Entity()
 export class Order extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  title: string;
+
+  @Column({ nullable: true })
+  description: string;
+
   @Column({ nullable: true })
   clientId: string;
 
   @Column({ nullable: true })
-  clientNumber: string;
-
-  @Column({ nullable: true })
-  clientEmail: string;
-
-  @Column({ nullable: true })
   vendorId: string;
 
-  @Column({ nullable: true })
-  vendorNumber: string;
+  @OneToOne(() => OrderChat, (chat) => chat.order)
+  @JoinColumn()
+  chat: Relation<OrderChat>;
 
-  @Column({ nullable: true })
-  vendorEmail: string;
-
-  @OneToMany(() => OrderChatMessage, (chatMessage) => chatMessage.order)
-  messages: Relation<OrderChatMessage>[];
+  @OneToMany(() => OrderInvitation, (invitation) => invitation.order)
+  invitations: Relation<OrderInvitation>[];
 
   @OneToMany(() => OrderInvoice, (invoice) => invoice.order)
   invoices: Relation<OrderInvoice>[];
@@ -90,17 +91,9 @@ export class Order extends BaseEntity {
 
   @BeforeInsert()
   @BeforeUpdate()
-  validateClientInfo() {
-    if (!this.clientEmail && !this.clientNumber && !this.clientId) {
-      throw new BadRequestException('Please provide client details.');
-    }
-  }
-
-  @BeforeInsert()
-  @BeforeUpdate()
-  validateVendorInfo() {
-    if (!this.vendorEmail && !this.vendorNumber && !this.vendorId) {
-      throw new BadRequestException('Please provide client details.');
+  validateInfo() {
+    if (!this.vendorId && !this.clientId) {
+      throw new BadRequestException('Please provide order details.');
     }
   }
 

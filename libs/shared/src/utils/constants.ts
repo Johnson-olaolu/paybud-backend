@@ -1,3 +1,4 @@
+import { ORDER_JOB_NAMES } from 'apps/order/src/utils/constants';
 import { JOB_NAMES as NOTIFICATION_JOB_NAMES } from '../../../../apps/notification/src/utils/constants';
 import { JOB_NAMES as VENDOR_JOB_NAMES } from '../../../../apps/vendor/src/utils /constants';
 
@@ -14,4 +15,5 @@ export const RABBITMQ_QUEUES = {
 export const APP_JOB_NAMES = {
   ...NOTIFICATION_JOB_NAMES,
   ...VENDOR_JOB_NAMES,
+  ...ORDER_JOB_NAMES,
 };

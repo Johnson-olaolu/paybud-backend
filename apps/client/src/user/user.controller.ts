@@ -4,6 +4,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { EmailLoginDto } from './dto/email-login.dto';
+import { GetUserByEmailOrPhoneDTO } from './dto/get-user.dto';
 
 @Controller()
 export class UserController {
@@ -33,8 +34,13 @@ export class UserController {
   }
 
   @MessagePattern('findOneUser')
-  findOne(@Payload() id: number) {
+  findOne(@Payload() id: string) {
     return this.userService.findOne(id);
+  }
+
+  @MessagePattern('getUserByEmailOrPhone')
+  getUserByEmailOrPhone(@Payload() data: GetUserByEmailOrPhoneDTO) {
+    return this.userService.getUserByEmailorPhone(data.email, data.phoneNumber);
   }
 
   @MessagePattern('updateUser')

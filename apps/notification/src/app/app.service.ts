@@ -19,6 +19,7 @@ export class AppService {
     @InjectRepository(AppNotification)
     private appNotificationRepository: Repository<AppNotification>,
     @Inject(RABBITMQ_QUEUES.GATEWAY) private gatewayProxy: ClientProxy,
+    @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
   ) {}
 
   async createNotification(createAppNotificationDto: CreateAppNotificationDto) {
@@ -31,6 +32,14 @@ export class AppService {
     this.sendNotificationsToUser(notifications);
     if (createAppNotificationDto.popup) this.sendPopupToUser(notification);
     return notification;
+  }
+
+  async createNotificationToVendor(
+    createAppNotificationBusinessDto: CreateAppNotificationDto,
+  ) {
+    const business = await lastValueFrom(
+      vendorProxy.send('', createAppNotificationBusinessDto.vendorId),
+    );
   }
 
   async getUserNotifications(getUserNotificationsDto: GetUserNotificationsDto) {

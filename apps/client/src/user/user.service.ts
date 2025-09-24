@@ -64,7 +64,6 @@ export class UserService {
     }
     const key = `client:${user.id}:email_token`;
     const tokenHash = await this.cacheManager.get<string>(key);
-    console.log({ key });
     if (!tokenHash) {
       throw new BadRequestException('Token expired');
     }
@@ -113,6 +112,16 @@ export class UserService {
 
   async findOne(id: string) {
     const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new BadRequestException(`User not found`);
+    }
+    return user;
+  }
+
+  async getUserByEmailorPhone(email: string, phoneNumber: string) {
+    const user = await this.userRepository.findOne({
+      where: [{ email }, { phoneNumber }],
+    });
     if (!user) {
       throw new BadRequestException(`User not found`);
     }

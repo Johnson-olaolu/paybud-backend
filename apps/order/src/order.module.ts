@@ -17,14 +17,15 @@ import { OrderItem } from './entities/order-item.entity';
 import { OrderInvoice } from './entities/order-invoice.entity';
 import { OrderSnapshot } from './entities/order-snapshot.entity';
 import { OrderReview } from './entities/order-review.entity';
-import { OrderChatMessage } from './entities/order-chat-message.entity';
+import { OrderChatModule } from './chat/chat.module';
+import { OrderInvitationService } from './services/order-invitation.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
-      envFilePath: 'apps/vendor/.env',
+      envFilePath: 'apps/order/.env',
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -75,10 +76,10 @@ import { OrderChatMessage } from './entities/order-chat-message.entity';
       OrderInvoice,
       OrderSnapshot,
       OrderReview,
-      OrderChatMessage,
+      OrderChatModule,
     ]),
   ],
   controllers: [OrderController],
-  providers: [OrderService],
+  providers: [OrderService, OrderInvitationService],
 })
 export class OrderModule {}

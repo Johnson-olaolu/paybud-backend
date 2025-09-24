@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Request - {{orderTitle}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            margin: -30px -30px 20px -30px;
+        }
+        .order-details {
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .client-info {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .cta-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        .cta-secondary {
+            background: transparent;
+            color: #28a745;
+            border: 2px solid #28a745;
+            padding: 13px 28px;
+            text-decoration: none;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 10px 10px 10px 0;
+            font-weight: bold;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .info-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #333;
+            font-size: 14px;
+        }
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .opportunity-highlight {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        .security-notice {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #155724;
+        }
+        .steps {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+        }
+        .step-number {
+            background: #28a745;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        @media (max-width: 600px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .cta-button, .cta-secondary {
+                display: block;
+                text-align: center;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💼 New Service Opportunity</h1>
+            <p>A client is looking for your expertise!</p>
+        </div>
+
+        <h2>Hello {{vendorName}},</h2>
+        
+        <p>Great news! <strong>{{clientName}}</strong> has invited you to provide services for their project. This could be a perfect opportunity to showcase your skills and grow your business.</p>
+
+        <div class="opportunity-highlight">
+            <h3>💰 Potential Earnings</h3>
+            <div class="amount">₦{{orderAmount}}</div>
+            <p style="margin: 5px 0; color: #856404;">Estimated project value</p>
+        </div>
+
+        <div class="order-details">
+            <h3>📋 Project Details</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Project Title</div>
+                    <div class="info-value">{{orderTitle}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Project ID</div>
+                    <div class="info-value">#{{orderNumber}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value">
+                        <span class="status-badge">{{orderStatus}}</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Category</div>
+                    <div class="info-value">{{orderCategory}}</div>
+                </div>
+            </div>
+            
+            {{#if orderDescription}}
+            <div style="margin-top: 15px;">
+                <div class="info-label">Project Description</div>
+                <div class="info-value" style="background-color: white; padding: 15px; border-radius: 5px; border-left: 3px solid #28a745;">
+                    {{orderDescription}}
+                </div>
+            </div>
+            {{/if}}
+
+            {{#if startDate}}
+            <div class="info-grid" style="margin-top: 15px;">
+                <div class="info-item">
+                    <div class="info-label">Preferred Start Date</div>
+                    <div class="info-value">{{startDate}}</div>
+                </div>
+                {{#if endDate}}
+                <div class="info-item">
+                    <div class="info-label">Expected Completion</div>
+                    <div class="info-value">{{endDate}}</div>
+                </div>
+                {{/if}}
+            </div>
+            {{/if}}
+
+            {{#if requirements}}
+            <div style="margin-top: 15px;">
+                <div class="info-label">Special Requirements</div>
+                <div class="info-value">{{requirements}}</div>
+            </div>
+            {{/if}}
+        </div>
+
+        <div class="client-info">
+            <h3>👤 Client Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Client Name</div>
+                    <div class="info-value">{{clientName}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Company</div>
+                    <div class="info-value">{{clientCompany}}</div>
+                </div>
+                {{#if clientLocation}}
+                <div class="info-item">
+                    <div class="info-label">Location</div>
+                    <div class="info-value">{{clientLocation}}</div>
+                </div>
+                {{/if}}
+                {{#if clientRating}}
+                <div class="info-item">
+                    <div class="info-label">Client Rating</div>
+                    <div class="info-value">⭐ {{clientRating}}/5.0</div>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="steps">
+            <h3>🚀 Next Steps</h3>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>
+                    <strong>Review the project details</strong><br>
+                    <small>Make sure the project aligns with your expertise and availability</small>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>
+                    <strong>Submit your proposal</strong><br>
+                    <small>Include your timeline, approach, and any questions you may have</small>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>
+                    <strong>Negotiate terms</strong><br>
+                    <small>Discuss project details, pricing, and deliverables with the client</small>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div>
+                    <strong>Start earning</strong><br>
+                    <small>Begin work once both parties agree on the terms</small>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <h3>Interested in this opportunity?</h3>
+            <p>Review the full project details and submit your proposal:</p>
+            
+            <a href="{{orderUrl}}" class="cta-button">View Project & Submit Proposal</a>
+            <a href="{{declineUrl}}" class="cta-secondary">Decline Invitation</a>
+        </div>
+
+        <div class="security-notice">
+            <strong>✅ PayBud Protection:</strong> This project is protected by PayBud's secure payment system. You'll receive payment once milestones are completed and approved. <strong>Invitation expires in 7 days.</strong>
+        </div>
+
+        <h3>Why choose this opportunity?</h3>
+        <ul>
+            <li><strong>💳 Secure payments:</strong> All transactions are protected by PayBud's escrow system</li>
+            <li><strong>📈 Build your reputation:</strong> Complete successful projects to improve your vendor rating</li>
+            <li><strong>🤝 Direct communication:</strong> Work directly with the client through our platform</li>
+            <li><strong>📊 Track progress:</strong> Use our project management tools to stay organized</li>
+        </ul>
+
+        <h3>Need Support?</h3>
+        <p>If you have questions about this opportunity or need assistance:</p>
+        <ul>
+            <li>💬 Message the client directly through the project page</li>
+            <li>📧 PayBud Vendor Support: vendors@paybud.com</li>
+            <li>📚 Vendor Resources: <a href="{{vendorHelpUrl}}">paybud.com/vendors/help</a></li>
+            <li>📞 Call us: +234 (0) 123 456 7890</li>
+        </ul>
+
+        <p>We're excited to help you win this project and grow your business!</p>
+
+        <div class="footer">
+            <p>Best regards,<br>
+            The PayBud Vendor Success Team</p>
+            
+            <p style="margin-top: 20px;">
+                This invitation was sent to {{vendorEmail}} by {{clientName}}<br>
+                Project posted on {{invitationDate}}
+            </p>
+            
+            <p>© 2024 PayBud. All rights reserved.<br>
+            <a href="{{unsubscribeUrl}}">Unsubscribe from vendor opportunities</a></p>
+        </div>
+    </div>
+</body>
+</html>

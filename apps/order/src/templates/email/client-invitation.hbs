@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Invitation - {{orderTitle}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            margin: -30px -30px 20px -30px;
+        }
+        .order-details {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .business-info {
+            background-color: #e8f5e8;
+            border: 1px solid #c3e6c3;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .cta-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .info-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #333;
+            font-size: 14px;
+        }
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: #ffeaa7;
+            color: #d63031;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        .security-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        @media (max-width: 600px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤝 Order Invitation</h1>
+            <p>You've been invited to collaborate on a new order</p>
+        </div>
+
+        <h2> Hello 👋 ,  </h2>
+        
+        <p>You have been invited to participate in a new order created by <strong>{{businessName}}</strong>. Here are the details:</p>
+
+        <div class="order-details">
+            <h3>📋 Order Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Order Title</div>
+                    <div class="info-value">{{orderTitle}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Order ID</div>
+                    <div class="info-value">#{{orderNumber}}</div>
+                </div>
+            </div>
+            
+            {{#if orderDescription}}
+            <div style="margin-top: 15px;">
+                <div class="info-label">Description</div>
+                <div class="info-value">{{orderDescription}}</div>
+            </div>
+            {{/if}}
+
+            {{#if startDate}}
+            <div class="info-grid" style="margin-top: 15px;">
+                <div class="info-item">
+                    <div class="info-label">Start Date</div>
+                    <div class="info-value">{{startDate}}</div>
+                </div>
+                {{#if endDate}}
+                <div class="info-item">
+                    <div class="info-label">End Date</div>
+                    <div class="info-value">{{endDate}}</div>
+                </div>
+                {{/if}}
+            </div>
+            {{/if}}
+        </div>
+
+        <div class="business-info">
+            <h3>🏢 Business Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Business Name</div>
+                    <div class="info-value">{{businessName}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Contact Person</div>
+                    <div class="info-value">{{vendorName}}</div>
+                </div>
+                {{#if businessEmail}}
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{businessEmail}}</div>
+                </div>
+                {{/if}}
+                {{#if businessPhone}}
+                <div class="info-item">
+                    <div class="info-label">Phone</div>
+                    <div class="info-value">{{businessPhone}}</div>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <h3>Ready to get started?</h3>
+            <p>Click the button below to view the order details and decide whether to accept or decline this invitation:</p>
+            
+            <a href="{{orderUrl}}" class="cta-button">View Order Details</a>
+        </div>
+
+        <div class="security-notice">
+            <strong>🔒 Security Notice:</strong> This invitation is valid for <strong>7 days</strong> from the date it was sent. After this period, you'll need to request a new invitation from the vendor.
+        </div>
+
+        <h3>What happens next?</h3>
+        <ol>
+            <li><strong>Review the order:</strong> Click the link above to see full order details</li>
+            <li><strong>Accept or decline:</strong> Let {{businessName}} know your decision</li>
+            <li><strong>Start collaborating:</strong> If accepted, you can begin working on the order</li>
+            <li><strong>Secure payment:</strong> All payments are processed securely through PayBud</li>
+        </ol>
+
+        <h3>Need Help?</h3>
+        <p>If you have any questions about this order or need assistance:</p>
+        <ul>
+            <li>📧 Contact the vendor directly: {{#if businessEmail}}{{businessEmail}}{{else}}Available in order details{{/if}}</li>
+            <li>💬 PayBud Support: support@paybud.com</li>
+            {{!-- <li>📚 Help Center: <a href="{{helpCenterUrl}}">paybud.com/help</a></li> --}}
+        </ul>
+
+        <p>We're here to ensure a smooth and secure collaboration experience!</p>
+
+        <div class="footer">
+            <p>Best regards,<br>
+            The PayBud Team</p>
+            
+            <p style="margin-top: 20px;">
+                This invitation was sent to {{clientEmail}} by {{businessName}}<br>
+                If you believe this was sent in error, please contact our support team.
+            </p>
+            
+            <p>© 2024 PayBud. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

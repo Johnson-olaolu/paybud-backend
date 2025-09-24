@@ -17,6 +17,7 @@ import { JOB_NAMES } from '../utils /constants';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bullmq';
 import { ValidateBusinessDto } from './dto/validate-business.dto';
+import { GetBusinessByEmailOrPhoneDTO } from './dto/get-business.dto';
 
 @Injectable()
 export class BusinessService {
@@ -112,6 +113,22 @@ export class BusinessService {
   async findOne(id: string) {
     const business = await this.businessRepository.findOne({
       where: { id },
+      relations: {
+        owner: true,
+        profile: true,
+        wallets: true,
+      },
+      relationLoadStrategy: 'query',
+    });
+    if (!business) {
+      throw new BadRequestException('Business not found');
+    }
+    return business;
+  }
+
+  async findByEmailOrPhone(dto: GetBusinessByEmailOrPhoneDTO) {
+    const business = await this.businessRepository.findOne({
+      where: [{ businessEmail: dto.email }, { businessPhone: dto.phoneNumber }],
       relations: {
         owner: true,
         profile: true,

@@ -10,8 +10,8 @@ import {
   Relation,
   UpdateDateColumn,
 } from 'typeorm';
-import { Order } from './order.entity';
-import { MessageTypeEnum } from '../utils/constants';
+import { OrderChat } from './order-chat.entity';
+import { MessageTypeEnum } from '../../utils/constants';
 
 interface BidDetails {
   amount: number;
@@ -23,8 +23,8 @@ export class OrderChatMessage extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Order, (order) => order.messages)
-  order: Relation<Order>[];
+  @ManyToOne(() => OrderChat, (chat) => chat.messages)
+  chat: Relation<OrderChat>;
 
   @Column()
   senderId: string;

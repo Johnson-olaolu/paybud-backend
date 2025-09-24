@@ -2,7 +2,10 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { JOB_NAMES } from '../utils/constants';
 import { Job } from 'bullmq';
 import { AppService } from './app.service';
-import { CreateAppNotificationDto } from './dto/create-app-notification.dto';
+import {
+  CreateAppNotificationBusinessDto,
+  CreateAppNotificationDto,
+} from './dto/create-app-notification.dto';
 import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
 
 @Processor(JOB_NAMES.APP)
@@ -15,10 +18,12 @@ export class AppNotificationWorker extends WorkerHost {
     job: Job<
       | CreateAppNotificationDto
       | GetUserNotificationsDto
+      | CreateAppNotificationBusinessDto
       | { notificationId: string }
       | { userId: string },
       { message: string },
       | 'createNotification'
+      | 'createNotificationToVendor'
       | 'getUserNotifications'
       | 'markNotificationAsRead'
       | 'markAllNotificationsAsRead'
@@ -30,6 +35,10 @@ export class AppNotificationWorker extends WorkerHost {
       case 'createNotification':
         return await this.appNotificationService.createNotification(
           job.data as CreateAppNotificationDto,
+        );
+      case 'createNotificationToVendor':
+        return await this.appNotificationService.createNotificationToVendor(
+          job.data as CreateAppNotificationBusinessDto,
         );
       case 'getUserNotifications': {
         const notifications =

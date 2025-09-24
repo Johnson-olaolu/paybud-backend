@@ -22,10 +22,10 @@ export class OrderItem extends BaseEntity {
   order: Relation<Order>;
 
   @TreeParent()
-  parent: Comment;
+  parent: OrderItem;
 
   @TreeChildren()
-  children: Comment[];
+  children: OrderItem[];
 
   @CreateDateColumn()
   createdAt: Date;

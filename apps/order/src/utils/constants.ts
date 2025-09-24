@@ -15,4 +15,24 @@ export enum OrderStatusEnum {
   DISPUTED = 'DISPUTED',
 }
 
-// 'draft', 'negotiating', 'pending_confirmation', 'active', 'completed', 'cancelled', 'disputed'
+export enum InvitationStatusEnum {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  DECLINED = 'DECLINED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum InvoiceStatusEnum {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  OVERDUE = 'OVERDUE',
+}
+
+export enum OrderInviteMediumEnum {
+  EMAIL = 'EMAIL',
+  PHONE = 'PHONE',
+}
+
+export const ORDER_JOB_NAMES = {
+  ORDER_INVITATIONS: 'ORDER_INVITATIONS',
+};

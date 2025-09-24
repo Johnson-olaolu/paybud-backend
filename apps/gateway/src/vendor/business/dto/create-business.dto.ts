@@ -17,6 +17,12 @@ export class CreateBusinessDto {
   @IsNotEmpty()
   name: string;
 
+  @IsEmail()
+  businessEmail: string;
+
+  @IsPhoneNumber()
+  businessPhone: string;
+
   @IsString()
   @IsOptional()
   description?: string;

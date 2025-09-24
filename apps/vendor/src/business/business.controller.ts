@@ -3,6 +3,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
+import { GetBusinessByEmailOrPhoneDTO } from './dto/get-business.dto';
 
 @Controller()
 export class BusinessController {
@@ -16,6 +17,11 @@ export class BusinessController {
   @MessagePattern('findAllBusiness')
   findAll() {
     return this.businessService.findAll();
+  }
+
+  @MessagePattern('findBusinessByEmailOrPhone')
+  findByEmailOrPhone(@Payload() dto: GetBusinessByEmailOrPhoneDTO) {
+    return this.businessService.findByEmailOrPhone(dto);
   }
 
   @MessagePattern('findOneBusiness')

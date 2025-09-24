@@ -74,6 +74,8 @@ export class BusinessWorker extends WorkerHost {
 
           const business = this.businessRepository.create({
             name: data.name,
+            businessEmail: data.businessEmail,
+            businessPhone: data.businessPhone,
             owner: user,
             users: [user],
             profile: savedBusinessProfile,

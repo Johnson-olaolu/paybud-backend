@@ -56,6 +56,15 @@ export class Business extends BaseEntity {
   @JoinColumn()
   profile: Relation<BusinessProfile>;
 
+  //TODO remove nullable before production
+  @Index()
+  @Column({ nullable: true, unique: true })
+  businessEmail: string;
+
+  @Index()
+  @Column({ nullable: true, unique: true })
+  businessPhone: string;
+
   @OneToMany(() => User, (user) => user.business)
   users: Relation<User>[];
 

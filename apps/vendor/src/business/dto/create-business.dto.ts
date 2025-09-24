@@ -17,6 +17,12 @@ export class CreateBusinessDto {
   @IsNotEmpty()
   name: string;
 
+  @IsEmail()
+  businessEmail: string;
+
+  @IsPhoneNumber()
+  businessPhone: string;
+
   @IsString()
   @IsOptional()
   description?: string;
@@ -25,9 +31,11 @@ export class CreateBusinessDto {
   @IsOptional()
   address?: string;
 
+  @IsOptional()
   @IsPhoneNumber()
   contactPhoneNumber?: string;
 
+  @IsOptional()
   @IsEmail()
   contactEmail: string;
 
