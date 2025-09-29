@@ -19,6 +19,9 @@ import { OrderSnapshot } from './entities/order-snapshot.entity';
 import { OrderReview } from './entities/order-review.entity';
 import { OrderChatModule } from './chat/chat.module';
 import { OrderInvitationService } from './services/order-invitation.service';
+import { OrderItemService } from './services/order-item.service';
+import { OrderInvitation } from './entities/order-invitation.entity';
+import { ORDER_JOB_NAMES } from './utils/constants';
 
 @Module({
   imports: [
@@ -66,9 +69,14 @@ import { OrderInvitationService } from './services/order-invitation.service';
       imports: [ConfigModule],
       inject: [ConfigService],
     }),
+    BullModule.registerQueue({
+      name: ORDER_JOB_NAMES.ORDER_INVITATIONS,
+    }),
     DatabaseModule,
     RabbitmqModule,
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.NOTIFICATION }),
+    RabbitmqModule.register({ name: RABBITMQ_QUEUES.VENDOR }),
+    RabbitmqModule.register({ name: RABBITMQ_QUEUES.CLIENT }),
     EventEmitterModule.forRoot(),
     TypeOrmModule.forFeature([
       Order,
@@ -77,9 +85,10 @@ import { OrderInvitationService } from './services/order-invitation.service';
       OrderSnapshot,
       OrderReview,
       OrderChatModule,
+      OrderInvitation,
     ]),
   ],
   controllers: [OrderController],
-  providers: [OrderService, OrderInvitationService],
+  providers: [OrderService, OrderInvitationService, OrderItemService],
 })
 export class OrderModule {}

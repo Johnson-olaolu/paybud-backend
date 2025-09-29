@@ -17,7 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
-import { User } from 'apps/gateway/types/vendor';
+import { User } from '@app/shared/types/vendor';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))

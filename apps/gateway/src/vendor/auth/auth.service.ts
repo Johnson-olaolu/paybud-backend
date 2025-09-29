@@ -5,7 +5,6 @@ import { RegisterDto } from './dto/register.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { User } from 'apps/gateway/types/vendor';
 import { EnvironmentVariables } from '../../config/env.config';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -18,6 +17,7 @@ import { RegistrationTypeEnum } from '../../utils/constants';
 import { FacebookLoginDto } from './dto/facebook-login.dto';
 import { FacebookAuthService } from '../../services/facebook/facebook.auth.service';
 import ms, { StringValue } from 'ms';
+import { User } from '@app/shared/types/vendor';
 
 @Injectable()
 export class AuthService {

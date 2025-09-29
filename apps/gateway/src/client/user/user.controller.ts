@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ClientUser } from 'apps/gateway/types/client';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ClientUser } from '@app/shared/types/client';
 
 @UseGuards(AuthGuard('client-jwt'))
 @ApiBearerAuth()

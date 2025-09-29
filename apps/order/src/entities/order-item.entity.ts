@@ -1,5 +1,7 @@
 import {
+  // AfterInsert,
   AfterLoad,
+  // AfterUpdate,
   BaseEntity,
   Column,
   CreateDateColumn,
@@ -41,20 +43,10 @@ export class OrderItem extends BaseEntity {
   })
   status: OrderItemStatusEnum;
 
-  @Column('array', { default: [] })
+  @Column('simple-array', { default: [] })
   fileIds: string[];
 
   files: File[];
-
-  @AfterLoad()
-  async loadFiles() {
-    for (const fileId of this.fileIds) {
-      const file = await fetchFileById(fileId);
-      if (file) {
-        this.files.push(file);
-      }
-    }
-  }
 
   @TreeParent()
   parent: OrderItem;
@@ -67,4 +59,16 @@ export class OrderItem extends BaseEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  // @AfterInsert()
+  // @AfterUpdate()
+  @AfterLoad()
+  async loadFiles() {
+    for (const fileId of this.fileIds) {
+      const file = await fetchFileById(fileId);
+      if (file) {
+        this.files.push(file);
+      }
+    }
+  }
 }

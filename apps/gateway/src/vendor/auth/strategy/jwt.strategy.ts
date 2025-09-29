@@ -4,8 +4,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { EnvironmentVariables } from 'apps/gateway/src/config/env.config';
-import { User } from 'apps/gateway/types/vendor';
 import { Cache } from 'cache-manager';
+import { User } from '@app/shared/types/vendor';
 
 interface JwtPayload {
   sub: string;

@@ -21,6 +21,7 @@ async function bootstrap() {
   app.enableCors({
     origin: true,
   });
+  app.setGlobalPrefix('api');
   await configureSwagger(app, 'documentation');
   configureBullMQ(app, '/queues');
   app.useGlobalPipes(new ValidationPipe());

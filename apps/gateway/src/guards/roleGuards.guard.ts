@@ -1,5 +1,5 @@
+import { User } from '@app/shared/types/vendor';
 import { CanActivate, ExecutionContext, mixin, Type } from '@nestjs/common';
-import { User } from 'apps/gateway/types/vendor';
 
 const RoleGuard = (roles: string[]): Type<CanActivate> => {
   class RoleGuardMixin implements CanActivate {

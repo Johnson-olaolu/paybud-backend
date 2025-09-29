@@ -12,7 +12,7 @@ import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { User } from 'apps/gateway/types/vendor';
+import { User } from '@app/shared/types/vendor';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))

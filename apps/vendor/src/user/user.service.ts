@@ -81,13 +81,13 @@ export class UserService {
     );
     let verificationLink = '';
     if (token) {
-      verificationLink = `${this.configService.get('FRONTEND_URL')}/vendor/auth/verify-email?token=${token}`;
+      verificationLink = `${this.configService.get('BACKEND_URL')}/vendor/auth/verify-email?email=${user.email}&token=${token}`;
     } else {
       const payload = { sub: user.id, email: user.email };
       const newToken = this.jwtService.sign(payload, {
         expiresIn: '30m',
       });
-      verificationLink = `${this.configService.get('FRONTEND_URL')}/vendor/auth/verify-email?token=${newToken}`;
+      verificationLink = `${this.configService.get('BACKEND_URL')}/vendor/auth/verify-email?email=${user.email}&token=${newToken}`;
       await this.cacheManager.set(
         `email-verification-token-${user.id}`,
         newToken,
@@ -112,7 +112,7 @@ export class UserService {
     const token = this.jwtService.sign(payload, {
       expiresIn: '30m',
     });
-    const verificationLink = `${this.configService.get('FRONTEND_URL')}/vendor/auth/verify-email?token=${token}`;
+    const verificationLink = `${this.configService.get('BACKEND_URL')}/vendor/auth/verify-email?email=${encodeURIComponent(user.email)}&token=${encodeURIComponent(token)}`;
     await this.cacheManager.set(
       `email-verification-token-${user.id}`,
       token,
@@ -160,7 +160,7 @@ export class UserService {
     });
     const resetLink = `${this.configService.get(
       'FRONTEND_URL',
-    )}/vendor/auth/reset-password?token=${token}`;
+    )}/auth/reset-password?token=${encodeURIComponent(token)}`;
     const body = generateEmailBody('reset-password', {
       name: user.fullName || '',
       resetLink,

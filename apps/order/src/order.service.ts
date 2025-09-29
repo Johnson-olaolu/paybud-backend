@@ -18,11 +18,14 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { Business } from '../../../libs/shared/src/types/vendor';
 import { ClientUser } from '../../../libs/shared/src/types/client';
+import { OrderItemService } from './services/order-item.service';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly orderInvitationService: OrderInvitationService,
+    private readonly orderItemServioce: OrderItemService,
     @InjectRepository(Order) private orderRepository: Repository<Order>,
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
     @Inject(RABBITMQ_QUEUES.CLIENT) private clientProxy: ClientProxy,
@@ -51,6 +54,9 @@ export class OrderService {
         endDate: vendorCreateOrderDto.endDate,
       });
       const savedOrder = await queryRunner.manager.save(order);
+      for (const orderItemDto of vendorCreateOrderDto.orderItems) {
+        await this.orderItemServioce.createOrderItem(savedOrder, orderItemDto);
+      }
       await this.orderInvitationService.inviteClient(
         savedOrder,
         vendor,
@@ -87,6 +93,9 @@ export class OrderService {
         endDate: clientCreateOrderDto.endDate,
       });
       const savedOrder = await queryRunner.manager.save(order);
+      for (const orderItemDto of clientCreateOrderDto.orderItems) {
+        await this.orderItemServioce.createOrderItem(savedOrder, orderItemDto);
+      }
       await this.orderInvitationService.inviteVendor(
         savedOrder,
         client,
@@ -99,5 +108,18 @@ export class OrderService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async updateOrder(updateOrderDto: UpdateOrderDto) {
+    const order = await this.findOne(updateOrderDto.id);
+    order.amount = updateOrderDto.amount;
+  }
+
+  async findOne(id: string) {
+    const order = await this.orderRepository.findOne({ where: { id } });
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+    return order;
   }
 }

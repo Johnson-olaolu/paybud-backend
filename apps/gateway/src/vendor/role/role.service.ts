@@ -4,7 +4,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { Role } from 'apps/gateway/types/vendor';
+import { Role } from '@app/shared/types/vendor';
 
 @Injectable()
 export class RoleService {

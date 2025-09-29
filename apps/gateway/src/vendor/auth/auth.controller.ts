@@ -18,17 +18,22 @@ import { RegisterDto } from './dto/register.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { VendorLocalAuthGuard } from '../../guards/loginGuard.guard';
 import { LoginDto } from './dto/login.dto';
-import { User } from 'apps/gateway/types/vendor';
 import { Response, Request } from 'express';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { FacebookLoginDto } from './dto/facebook-login.dto';
+import { User } from '@app/shared/types/vendor';
+import { EnvironmentVariables } from '../../config/env.config';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Vendor Auth')
 @Controller('vendor/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService<EnvironmentVariables>,
+  ) {}
 
   @Post('register')
   async create(@Body() registerDto: RegisterDto) {
@@ -53,7 +58,18 @@ export class AuthController {
   ) {
     const user = (request as any).user as User;
     const tokens = await this.authService.getTokens(user.id, user.email);
-    res.setHeader('x-refresh-token', tokens.refreshToken);
+    res.cookie('x-refresh-token', tokens.refreshToken, {
+      httpOnly: true, // can't be accessed by JS
+      secure: this.configService.get('NODE_ENV') === 'production', // only over HTTPS
+      sameSite: 'none', // prevent CSRF
+      path: '/', // available across the site
+    });
+    //     res.cookie("session", token, {
+    //   httpOnly: true,     // can't be accessed by JS
+    //   secure: true,       // only over HTTPS
+    //   sameSite: "Strict", // prevent CSRF
+    //   path: "/",          // available across the site
+    // });
     return {
       success: true,
       message: 'user logged in successfully',
@@ -84,7 +100,7 @@ export class AuthController {
     };
   }
 
-  @Get('verify-email')
+  @Get('verify-email-token')
   async resendVerificationEmail(@Query('email') email: string) {
     if (!email) {
       throw new BadRequestException('Email query parameter is required');
@@ -97,14 +113,22 @@ export class AuthController {
     };
   }
 
-  @Post('verify-email')
-  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
-    const user = await this.authService.verifyEmail(verifyEmailDto.token);
-    return {
-      success: true,
-      message: 'Email verified successfully',
-      data: user,
-    };
+  @Get('verify-email')
+  async verifyEmail(
+    @Query() verifyEmailDto: VerifyEmailDto,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.authService.verifyEmail(verifyEmailDto.token);
+      res.redirect(
+        `${this.configService.get('FRONTEND_URL')}/auth/verify-email?verified=true&email=${verifyEmailDto.email}`,
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      res.redirect(
+        `${this.configService.get('FRONTEND_URL')}/auth/verify-email?verified=false&email=${verifyEmailDto.email}&reason=${encodeURIComponent(error?.message || 'Unknown error')}`,
+      );
+    }
   }
 
   @Get('forgot-password')
@@ -149,7 +173,7 @@ export class AuthController {
 
   @Delete('logout/:userId')
   async logoutUser(@Param('userId') userId: string, @Req() request: Request) {
-    const token = request.headers['x-refresh-token'] as string;
+    const token = request.cookies['x-refresh-token'] as string;
     await this.authService.logout(userId, token || '');
     return {
       success: true,

@@ -92,6 +92,10 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
+  BACKEND_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
   PAYSTACK_SECRET_KEY: string;
 
   @IsString()

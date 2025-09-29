@@ -42,3 +42,8 @@ export enum OrderInviteMediumEnum {
 export const ORDER_JOB_NAMES = {
   ORDER_INVITATIONS: 'ORDER_INVITATIONS',
 };
+
+export class BidDetails {
+  amount: number;
+  currency: string;
+}

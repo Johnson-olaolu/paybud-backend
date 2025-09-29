@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { plainToInstance } from 'class-transformer';
 import {
+  IsEnum,
   // IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -10,19 +11,19 @@ import {
   validateSync,
 } from 'class-validator';
 
-// export enum Environment {
-//   Development = 'development',
-//   Production = 'production',
-//   Test = 'test',
-//   Provision = 'provision',
-// }
+export enum Environment {
+  Development = 'development',
+  Production = 'production',
+  Test = 'test',
+  Provision = 'provision',
+}
 
 export class EnvironmentVariables {
-  // @IsEnum(Environment, {
-  //   message:
-  //     'NODE_ENV must be one of: development, production, test, provision',
-  // })
-  // NODE_ENV: Environment;
+  @IsEnum(Environment, {
+    message:
+      'NODE_ENV must be one of: development, production, test, provision',
+  })
+  NODE_ENV: Environment;
 
   @IsNumber()
   PORT: number;

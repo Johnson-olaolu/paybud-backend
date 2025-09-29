@@ -13,8 +13,8 @@ import { AuthService } from './auth.service';
 import { ClientLocalAuthGuard } from '../../guards/loginGuard.guard';
 import { Request } from 'express';
 import { EmailLoginDto } from './dto/email-login.dto';
-import { ClientUser } from 'apps/gateway/types/client';
 import { ApiTags } from '@nestjs/swagger';
+import { ClientUser } from '@app/shared/types/client';
 
 @ApiTags('Client Auth')
 @Controller('client/auth')

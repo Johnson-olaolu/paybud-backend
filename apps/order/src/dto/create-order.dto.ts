@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsDate,
   IsEmail,
   IsEnum,
@@ -8,9 +9,11 @@ import {
   IsPhoneNumber,
   IsString,
   IsUUID,
+  ValidateNested,
 } from 'class-validator';
 import { OrderInviteMediumEnum } from '../utils/constants';
 import { Type } from 'class-transformer';
+import { CreateOrderItemDto } from './create-order-item.dto';
 
 export class InviteDetailsDto {
   @IsEnum(OrderInviteMediumEnum)
@@ -25,7 +28,7 @@ export class InviteDetailsDto {
   phoneNumber: string;
 }
 
-export class VendorCreateOrderDto {
+export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   title: string;
@@ -33,9 +36,6 @@ export class VendorCreateOrderDto {
   @IsString()
   @IsOptional()
   description?: string;
-
-  @IsUUID()
-  vendorId: string;
 
   @IsNumber()
   @IsOptional()
@@ -51,35 +51,19 @@ export class VendorCreateOrderDto {
 
   @Type(() => InviteDetailsDto)
   inviteDetails: InviteDetailsDto;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateOrderItemDto)
+  orderItems: CreateOrderItemDto[];
 }
 
-export class ClientCreateOrderDto {
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
-  @IsString()
-  @IsOptional()
-  description?: string;
-
-  @IsUUID()
-  clientId: string;
-
+export class VendorCreateOrderDto extends CreateOrderDto {
   @IsUUID()
   vendorId: string;
+}
 
-  @IsNumber()
-  @IsOptional()
-  amount: number;
-
-  @IsDate()
-  @IsOptional()
-  startDate?: Date;
-
-  @IsDate()
-  @IsOptional()
-  endDate?: Date;
-
-  @Type(() => InviteDetailsDto)
-  inviteDetails: InviteDetailsDto;
+export class ClientCreateOrderDto extends CreateOrderDto {
+  @IsUUID()
+  clientId: string;
 }

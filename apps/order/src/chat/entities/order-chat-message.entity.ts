@@ -11,12 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { OrderChat } from './order-chat.entity';
-import { MessageTypeEnum } from '../../utils/constants';
-
-interface BidDetails {
-  amount: number;
-  currency: string;
-}
+import { BidDetails, MessageTypeEnum } from '../../utils/constants';
 
 @Entity()
 export class OrderChatMessage extends BaseEntity {
@@ -28,6 +23,9 @@ export class OrderChatMessage extends BaseEntity {
 
   @Column()
   senderId: string;
+
+  @Column({ unique: true })
+  uniqueId: string;
 
   @Column()
   message: string;
