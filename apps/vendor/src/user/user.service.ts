@@ -269,6 +269,7 @@ export class UserService {
       });
       return await this.userRepository.save(user);
     }
+    return user;
   }
 
   async remove(id: string) {
