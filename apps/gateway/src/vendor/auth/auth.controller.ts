@@ -83,20 +83,28 @@ export class AuthController {
   @Post('google-login')
   async googleLogin(@Body() googleLoginDto: GoogleLoginDto) {
     const user = await this.authService.googleLogin(googleLoginDto);
+    const tokens = await this.authService.getTokens(user.id, user.email);
     return {
       success: true,
       message: 'Google login successful',
-      data: user,
+      data: {
+        user,
+        accessToken: tokens.accessToken,
+      },
     };
   }
 
   @Post('facebook-login')
   async facebookLogin(@Body() facebookLoginDto: FacebookLoginDto) {
     const user = await this.authService.facebookLogin(facebookLoginDto);
+    const tokens = await this.authService.getTokens(user.id, user.email);
     return {
       success: true,
       message: 'Facebook login successful',
-      data: user,
+      data: {
+        user,
+        accessToken: tokens.accessToken,
+      },
     };
   }
 

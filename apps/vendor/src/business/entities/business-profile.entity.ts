@@ -1,4 +1,5 @@
 import {
+  AfterLoad,
   BaseEntity,
   Column,
   CreateDateColumn,
@@ -9,6 +10,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Business } from './business.entity';
+import { fetchFileById } from '@app/shared/utils/misc';
+import { File } from '@app/shared/types/file';
 
 @Entity()
 export class BusinessProfile extends BaseEntity {
@@ -18,8 +21,13 @@ export class BusinessProfile extends BaseEntity {
   @OneToOne(() => Business)
   business: Relation<Business>;
 
+  @Column()
+  logoId: string;
+
   @Column({ nullable: true })
-  logo: string;
+  logoUrl: string;
+
+  logo?: File;
 
   @Column({ nullable: true })
   description: string;
@@ -32,6 +40,11 @@ export class BusinessProfile extends BaseEntity {
 
   @Column({ nullable: true })
   contactEmail: string;
+
+  @AfterLoad()
+  async getLogoUrl() {
+    this.logo = await fetchFileById(this.logoId);
+  }
 
   @CreateDateColumn()
   createdAt: Date;

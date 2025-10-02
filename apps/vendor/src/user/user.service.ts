@@ -24,6 +24,7 @@ import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { RegistrationTypeEnum } from '../utils /constants';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import ms from 'ms';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -47,7 +48,7 @@ export class UserService {
     await queryRunner.startTransaction();
     try {
       const profile = this.profileRepository.create({
-        profilePicture: createUserDto.profilePicture || generateAvatar(),
+        profilePictureUrl: createUserDto.profilePicture || generateAvatar(),
       });
       const savedProfile = await queryRunner.manager.save(profile);
       const role = await this.roleService.findOneByName('owner');
@@ -238,6 +239,16 @@ export class UserService {
     return await user.save();
   }
 
+  async updateProfile(id: string, updateProfileDto: UpdateProfileDto) {
+    const user = await this.findOne(id);
+    user.fullName = updateProfileDto.fullName;
+    for (const key in updateProfileDto) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      user.profile[key] = updateProfileDto[key];
+    }
+    return await user.save();
+  }
+
   async oAuthCreateUser(
     registrationType: RegistrationTypeEnum,
     createUserDto: CreateUserDto,
@@ -248,7 +259,7 @@ export class UserService {
     });
     if (!user) {
       const profile = await this.profileRepository.save({
-        profilePicture: createUserDto.profilePicture || generateAvatar(),
+        profilePictureUrl: createUserDto.profilePicture || generateAvatar(),
       });
       const role = await this.roleService.findOneByName('owner');
       user = this.userRepository.create({

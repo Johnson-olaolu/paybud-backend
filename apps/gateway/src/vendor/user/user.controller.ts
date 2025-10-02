@@ -13,6 +13,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from '@app/shared/types/vendor';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
@@ -44,6 +45,14 @@ export class UserController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
+  }
+
+  @Patch(':id/profile')
+  updateProfile(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateProfileDto,
+  ) {
+    return this.userService.updateProfile(id, updateUserDto);
   }
 
   @Delete(':id')

@@ -63,7 +63,7 @@ export class BusinessWorker extends WorkerHost {
           // Create business and business profile
 
           const businessProfile = this.businessProfileRepository.create({
-            logo: generateLogo(data.name),
+            logoUrl: generateLogo(data.name),
             address: data.address,
             contactPhoneNumber: data.contactPhoneNumber,
             contactEmail: data.contactEmail,

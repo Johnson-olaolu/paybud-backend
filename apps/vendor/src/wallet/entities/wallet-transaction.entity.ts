@@ -35,6 +35,9 @@ export class WalletTransaction extends BaseEntity {
   @Column()
   reference: string;
 
+  @Column({ nullable: true })
+  description: string;
+
   @Column({
     type: 'text',
     default: WalletTransactionStatusEnum.PENDING,
@@ -43,6 +46,12 @@ export class WalletTransaction extends BaseEntity {
 
   @OneToMany(() => Wallet, (wallet) => wallet.transactions)
   wallet: Relation<Wallet>;
+
+  @Column({
+    default: {},
+    type: 'json',
+  })
+  metadata: any;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -6,6 +6,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegistrationTypeEnum } from '../utils /constants';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller()
 export class UserController {
@@ -76,6 +77,13 @@ export class UserController {
   @MessagePattern('updateUser')
   update(@Payload() data: { id: string; updateUserDto: UpdateUserDto }) {
     return this.userService.update(data.id, data.updateUserDto);
+  }
+
+  @MessagePattern('updateUserProfile')
+  updateprofile(
+    @Payload() data: { id: string; updateUserDto: UpdateProfileDto },
+  ) {
+    return this.userService.updateProfile(data.id, data.updateUserDto);
   }
 
   @MessagePattern('removeUser')
