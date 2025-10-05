@@ -52,4 +52,8 @@ export class CreateBusinessDto {
   @IsNumberString()
   @Length(11, 11)
   businessBVN: string;
+
+  @IsUUID()
+  @IsOptional()
+  logoId: string;
 }

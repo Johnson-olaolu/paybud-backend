@@ -13,6 +13,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ServicesModule } from './services/services.module';
 import KeyvRedis from '@keyv/redis';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SettingsModule } from './settings/settings.module';
 // import basicAuth from 'express-basic-auth';
 
 @Module({
@@ -47,6 +48,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     }),
     CacheModule.register({ isGlobal: true }),
     ServicesModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

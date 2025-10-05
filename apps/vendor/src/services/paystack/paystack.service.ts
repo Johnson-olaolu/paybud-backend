@@ -7,6 +7,7 @@ import {
   PaystackCreateVBAAccountResponse,
   PaystackCustomerIdentificationFailedPayload,
   PaystackCustomerIdentificationSuccessPayload,
+  PaystackFetchBanksResponse,
   PaystackGetCustomerResponse,
 } from './types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -179,6 +180,16 @@ export class PaystackService {
     };
     const response = await lastValueFrom(
       this.httpService.post<PaystackCreateVBAAccountResponse>(url, body),
+    ).catch((error) => {
+      throw new BadRequestException(error?.response?.data || '');
+    });
+    return response.data;
+  }
+
+  async fetchBanks() {
+    const url = '/bank';
+    const response = await lastValueFrom(
+      this.httpService.get<PaystackFetchBanksResponse>(url),
     ).catch((error) => {
       throw new BadRequestException(error?.response?.data || '');
     });

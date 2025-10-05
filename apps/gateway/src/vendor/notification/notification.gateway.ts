@@ -78,15 +78,8 @@ export class NotificationGateway
     @MessageBody() data: GetUserNotificationsDto,
     // @ConnectedSocket() client: Socket,
   ) {
+    console.log({ data });
     this.notificationService.fetchUserNotifications(data);
-  }
-
-  @SubscribeMessage('notifications:load2')
-  loadNotifications2(
-    @MessageBody() data: GetUserNotificationsDto,
-    // @ConnectedSocket() client: Socket,
-  ) {
-    this.sendToUser(data.userId, []);
   }
 
   @SubscribeMessage('notifications:read')
@@ -106,10 +99,10 @@ export class NotificationGateway
     );
   }
 
-  async sendToUser(userId: string, notification: any) {
-    const socketsInRoom = await this.server.in(`user:${userId}`).fetchSockets();
-    console.log(`Sockets in room user:${userId}:`, socketsInRoom);
-    console.log('Sending notification to user:', userId, notification);
-    this.server.emit('notifications:load', notification);
-  }
+  // async sendToUser(userId: string, notification: any) {
+  //   const socketsInRoom = await this.server.in(`user:${userId}`).fetchSockets();
+  //   console.log(`Sockets in room user:${userId}:`, socketsInRoom);
+  //   console.log('Sending notification to user:', userId, notification);
+  //   this.server.emit('notifications:load', notification);
+  // }
 }

@@ -18,6 +18,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bullmq';
 import { ValidateBusinessDto } from './dto/validate-business.dto';
 import { GetBusinessByEmailOrPhoneDTO } from './dto/get-business.dto';
+import { PaystackService } from '../services/paystack/paystack.service';
 
 @Injectable()
 export class BusinessService {
@@ -28,6 +29,7 @@ export class BusinessService {
     private readonly businessProfileRepository: Repository<BusinessProfile>,
     @InjectQueue(JOB_NAMES.CREATE_BUSINESS)
     private businessQueue: Queue,
+    private payStackService: PaystackService,
   ) {}
 
   async create(createBusinessDto: CreateBusinessDto) {
@@ -35,6 +37,8 @@ export class BusinessService {
     await this.businessQueue
       .add('initiate_business_registration', createBusinessDto, {
         jobId: jobKey,
+        removeOnComplete: false,
+        removeOnFail: true,
       })
       .catch((error) => {
         throw new BadRequestException(
@@ -158,5 +162,10 @@ export class BusinessService {
       throw new BadRequestException('Business not found');
     }
     return true;
+  }
+
+  async fetchBanks() {
+    const res = await this.payStackService.fetchBanks();
+    return res.data;
   }
 }

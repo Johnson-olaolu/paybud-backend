@@ -58,12 +58,14 @@ export class BusinessWorker extends WorkerHost {
         await queryRunner.startTransaction();
         const data = job.data as CreateBusinessDto;
         const user = await this.userService.findOne(data.userId);
+
         console.log({ user });
         try {
           // Create business and business profile
 
           const businessProfile = this.businessProfileRepository.create({
             logoUrl: generateLogo(data.name),
+            logoId: data.logoId,
             address: data.address,
             contactPhoneNumber: data.contactPhoneNumber,
             contactEmail: data.contactEmail,

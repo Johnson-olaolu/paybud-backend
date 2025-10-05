@@ -55,6 +55,10 @@ export class CreateBusinessDto {
   @Length(11, 11)
   businessBVN: string;
 
+  @IsUUID()
+  @IsOptional()
+  logoId?: string;
+
   // @IsString()
   // @IsOptional()
   // businessCurrency: string;

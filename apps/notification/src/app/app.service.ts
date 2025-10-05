@@ -15,7 +15,7 @@ import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { User } from 'apps/notification/types/vendor';
+import { User } from '@app/shared/types/vendor';
 
 @Injectable()
 export class AppService {
@@ -146,7 +146,7 @@ export class AppService {
   }
 
   sendNotificationsToUser(notifications: AppNotification[]) {
-    if (notifications[0].clientType === 'vendor') {
+    if (notifications[0]?.clientType === 'vendor') {
       lastValueFrom(
         this.gatewayProxy.emit('vendor.notifyUser', {
           userId: notifications[0].userId,
@@ -156,7 +156,7 @@ export class AppService {
         console.error(err);
         throw new InternalServerErrorException('Failed to notify vendor');
       });
-    } else if (notifications[0].clientType === 'client') {
+    } else if (notifications[0]?.clientType === 'client') {
       lastValueFrom(
         this.gatewayProxy.emit('client.notifyUser', {
           userId: notifications[0].userId,
@@ -170,7 +170,7 @@ export class AppService {
   }
 
   sendPopupToUser(notification: AppNotification) {
-    if (notification.clientType === 'vendor') {
+    if (notification?.clientType === 'vendor') {
       lastValueFrom(
         this.gatewayProxy.emit('vendor.popupNotification', {
           userId: notification.userId,
@@ -180,7 +180,7 @@ export class AppService {
         console.error(err);
         throw new InternalServerErrorException('Failed to popup vendor');
       });
-    } else if (notification.clientType === 'client') {
+    } else if (notification?.clientType === 'client') {
       lastValueFrom(
         this.gatewayProxy.emit('client.popupNotification', {
           userId: notification.userId,

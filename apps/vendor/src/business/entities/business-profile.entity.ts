@@ -21,7 +21,7 @@ export class BusinessProfile extends BaseEntity {
   @OneToOne(() => Business)
   business: Relation<Business>;
 
-  @Column()
+  @Column({ nullable: true })
   logoId: string;
 
   @Column({ nullable: true })
@@ -43,7 +43,7 @@ export class BusinessProfile extends BaseEntity {
 
   @AfterLoad()
   async getLogoUrl() {
-    this.logo = await fetchFileById(this.logoId);
+    if (this.logoId) this.logo = await fetchFileById(this.logoId);
   }
 
   @CreateDateColumn()

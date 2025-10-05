@@ -40,4 +40,9 @@ export class BusinessController {
   remove(@Payload() id: string) {
     return this.businessService.remove(id);
   }
+
+  @MessagePattern('fetchBanks')
+  fetchBanks() {
+    return this.businessService.fetchBanks();
+  }
 }

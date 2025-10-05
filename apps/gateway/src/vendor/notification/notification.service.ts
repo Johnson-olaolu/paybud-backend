@@ -40,7 +40,7 @@ export class NotificationService {
     const success = this.server
       .to(`user:${userId}`)
       .emit('notifications:load', notifications || []);
-    console.log(success);
+    console.log({ success });
   }
 
   fetchUserNotifications(data: GetNotificationsDto) {
