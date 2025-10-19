@@ -37,10 +37,9 @@ export class NotificationService {
       this.logger.warn('Socket server not bound yet');
       return;
     }
-    const success = this.server
+    this.server
       .to(`user:${userId}`)
       .emit('notifications:load', notifications || []);
-    console.log({ success });
   }
 
   fetchUserNotifications(data: GetNotificationsDto) {
@@ -59,7 +58,10 @@ export class NotificationService {
   }
 
   readNotification(userId: string, notificationId: string) {
-    this.notificationProxy.emit('readNotification', { userId, notificationId });
+    this.notificationProxy.emit('markNotificationAsRead', {
+      userId,
+      notificationId,
+    });
   }
 
   deleteNotification(userId: string, notificationId: string) {

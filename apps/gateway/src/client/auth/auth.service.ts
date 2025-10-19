@@ -40,7 +40,6 @@ export class AuthService {
     ).catch((err) => {
       throw new RpcException(err);
     });
-    console.log({ user });
     return user;
   }
 

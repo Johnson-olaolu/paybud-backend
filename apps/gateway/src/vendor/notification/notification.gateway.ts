@@ -56,7 +56,6 @@ export class NotificationGateway
         throw new Error('Invalid token');
       }
       const user = await this.authService.getUser(sub);
-      console.log(user);
       await client.join(`user:${sub}`);
       if (!user) {
         throw new Error('Invalid token');
@@ -78,7 +77,7 @@ export class NotificationGateway
     @MessageBody() data: GetUserNotificationsDto,
     // @ConnectedSocket() client: Socket,
   ) {
-    console.log({ data });
+    console.log('Load Notifications', { data });
     this.notificationService.fetchUserNotifications(data);
   }
 
@@ -86,6 +85,7 @@ export class NotificationGateway
   readNotifications(
     @MessageBody() data: { notificationId: string; userId: string },
   ) {
+    console.log('Read Notification', { data });
     this.notificationService.readNotification(data.userId, data.notificationId);
   }
 

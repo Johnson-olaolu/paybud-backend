@@ -80,7 +80,7 @@ export class AppService {
       .orderBy('notification.createdAt', 'DESC')
       .take(limit)
       .getMany();
-
+      
     return notifications;
   }
 

@@ -13,7 +13,10 @@ export const configureBullMQ = (app: INestApplication, path: string) => {
   app.use(
     path,
     basicAuth({
-      users: { admin: 'supersecret' }, // 👈 username: admin, password: supersecret
+      users: {
+        [process.env.BULL_ADMIN_USER as string]: process.env
+          .BULL_ADMIN_PASSWORD as string,
+      },
       challenge: true,
     }),
   );
