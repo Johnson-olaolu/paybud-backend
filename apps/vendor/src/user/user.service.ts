@@ -8,7 +8,7 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Not, Repository } from 'typeorm';
 import { Profile } from './entities/profile.entity';
 import { User } from './entities/user.entity';
 import { generateAvatar, generateEmailBody } from '../utils /misc';
@@ -25,6 +25,7 @@ import { RegistrationTypeEnum } from '../utils /constants';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import ms from 'ms';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { FetchUserByBusinessDto } from './dto/fetch-user.dto';
 
 @Injectable()
 export class UserService {
@@ -291,9 +292,14 @@ export class UserService {
     return true;
   }
 
-  async getUsersByBusiness(id: string) {
+  async getUsersByBusiness(fetchUserByBusinessDto: FetchUserByBusinessDto) {
     const users = await this.userRepository.findOne({
-      where: { business: { id } },
+      where: {
+        business: { id: fetchUserByBusinessDto.businessId },
+        roleName: fetchUserByBusinessDto.roles
+          ? In(fetchUserByBusinessDto.roles)
+          : Not(''),
+      },
       relations: {
         profile: true,
       },

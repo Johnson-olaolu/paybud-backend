@@ -137,6 +137,7 @@ export class OrderInvitationService implements OnModuleInit {
         invitation.vendorNumber = invitationDetails.phoneNumber;
       }
       const savedInvitation = await queryRunner.manager.save(invitation);
+      return savedInvitation;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error?.message);
@@ -166,15 +167,36 @@ export class OrderInvitationService implements OnModuleInit {
       where: {
         id: invitationId,
         clientId,
-        status: InvitationStatusEnum.PENDING,
       },
       relations: { order: true },
     });
     if (!invitation) {
       throw new BadRequestException('Invitation not found');
     }
+    if (invitation.status === InvitationStatusEnum.EXPIRED) {
+      throw new BadRequestException('Invitation has expired');
+    }
     invitation.status = InvitationStatusEnum.ACCEPTED;
+    await invitation.save();
+    return invitation;
   }
 
-  async vendorAcceptInvitation(invitationId: string, clientId: string) {}
+  async vendorAcceptInvitation(invitationId: string, vendorId: string) {
+    const invitation = await this.orderInvitationRepository.findOne({
+      where: {
+        id: invitationId,
+        vendorId,
+        status: InvitationStatusEnum.PENDING,
+      },
+    });
+    if (!invitation) {
+      throw new BadRequestException('Invitation not found');
+    }
+    if (invitation.status === InvitationStatusEnum.EXPIRED) {
+      throw new BadRequestException('Invitation has expired');
+    }
+    invitation.status = InvitationStatusEnum.ACCEPTED;
+    await invitation.save();
+    return invitation;
+  }
 }

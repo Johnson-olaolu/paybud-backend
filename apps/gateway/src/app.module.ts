@@ -7,14 +7,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RabbitmqModule } from '@app/rabbitmq';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { EnvironmentVariables, validateEnv } from './config/env.config';
-// import { BullBoardModule } from '@bull-board/nestjs';
-// import { ExpressAdapter } from '@bull-board/express';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ServicesModule } from './services/services.module';
 import KeyvRedis from '@keyv/redis';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SettingsModule } from './settings/settings.module';
-// import basicAuth from 'express-basic-auth';
+import { ChatModule } from './vendor/chat/chat.module';
 
 @Module({
   imports: [
@@ -49,6 +47,7 @@ import { SettingsModule } from './settings/settings.module';
     CacheModule.register({ isGlobal: true }),
     ServicesModule,
     SettingsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

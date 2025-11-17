@@ -3,8 +3,8 @@ import { JOB_NAMES } from '../utils/constants';
 import { Job } from 'bullmq';
 import { AppService } from './app.service';
 import {
-  CreateAppNotificationBusinessDto,
   CreateAppNotificationDto,
+  CreateVendorAppNotificationDto,
 } from './dto/create-app-notification.dto';
 import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
 
@@ -18,7 +18,7 @@ export class AppNotificationWorker extends WorkerHost {
     job: Job<
       | CreateAppNotificationDto
       | GetUserNotificationsDto
-      | CreateAppNotificationBusinessDto
+      | CreateVendorAppNotificationDto
       | { notificationId: string }
       | { userId: string },
       { message: string },
@@ -33,12 +33,12 @@ export class AppNotificationWorker extends WorkerHost {
   ): Promise<any> {
     switch (job.name) {
       case 'createNotification':
-        return await this.appNotificationService.createNotification(
+        return await this.appNotificationService.createClientNotification(
           job.data as CreateAppNotificationDto,
         );
       case 'createNotificationToVendor':
-        return await this.appNotificationService.createNotificationToVendor(
-          job.data as CreateAppNotificationBusinessDto,
+        return await this.appNotificationService.createVendorNotification(
+          job.data as CreateVendorAppNotificationDto,
         );
       case 'getUserNotifications': {
         const notifications =
@@ -65,7 +65,9 @@ export class AppNotificationWorker extends WorkerHost {
         return await this.appNotificationService.deleteAllNotifications(
           (job.data as { userId: string }).userId,
         );
+      default:
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Unknown job name: ${job.name}`);
     }
-    // return this.emailService.sendEmail(job.data);
   }
 }

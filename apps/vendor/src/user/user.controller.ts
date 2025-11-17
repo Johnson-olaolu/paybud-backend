@@ -7,6 +7,7 @@ import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegistrationTypeEnum } from '../utils /constants';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { FetchUserByBusinessDto } from './dto/fetch-user.dto';
 
 @Controller()
 export class UserController {
@@ -38,9 +39,9 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
-  @MessagePattern('findUserByBusinessId')
-  findUserByBusinessId(@Payload() businessId: string) {
-    return this.userService.getUsersByBusiness(businessId);
+  @MessagePattern('findUserByBusiness')
+  findUserByBusiness(@Payload() payload: FetchUserByBusinessDto) {
+    return this.userService.getUsersByBusiness(payload);
   }
 
   @MessagePattern('findOneUserByEmail')

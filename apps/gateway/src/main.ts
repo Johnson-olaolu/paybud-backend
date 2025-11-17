@@ -20,6 +20,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(redisIoAdapter);
   app.enableCors({
     origin: true,
+    credentials: true,
   });
   app.setGlobalPrefix('api');
   await configureSwagger(app, 'documentation');

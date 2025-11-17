@@ -19,4 +19,26 @@ export class EmailController {
       message: 'Email job added to the queue',
     };
   }
+
+  @MessagePattern('sendVendorEmail')
+  async sendVendorEmail(@Payload() sendEmailDto: SendEmailDto) {
+    await this.emailQueue.add('send-vendor-email-job', sendEmailDto, {
+      removeOnComplete: true,
+    });
+    return {
+      success: true,
+      message: 'Vendor email job added to the queue',
+    };
+  }
+
+  @MessagePattern('sendClientEmail ')
+  async sendClientEmail(@Payload() sendEmailDto: SendEmailDto) {
+    await this.emailQueue.add('send-client-email-job', sendEmailDto, {
+      removeOnComplete: true,
+    });
+    return {
+      success: true,
+      message: 'Client email job added to the queue',
+    };
+  }
 }

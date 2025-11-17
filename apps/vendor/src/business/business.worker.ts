@@ -20,7 +20,7 @@ import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   SendAppNotificationDto,
-  SendEmailNotificationDto,
+  SendVendorEmailDto,
 } from '@app/shared/dto/notification.dto';
 // import { Inject } from '@nestjs/common';
 // import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
@@ -204,11 +204,6 @@ export class BusinessWorker extends WorkerHost {
             console.log({ business });
             await queryRunner.manager.save(business);
             await queryRunner.commitTransaction();
-            // this.gatewayProxy.emit('businessVerification', {
-            //   ownerId: business.owner.id,
-            //   success: true,
-            //   message: 'Business verified successfully',
-            // });
             this.notificationProxy.emit<boolean, SendAppNotificationDto>(
               'sendNotification',
               {
@@ -220,10 +215,11 @@ export class BusinessWorker extends WorkerHost {
                 popup: true,
               },
             );
-            this.notificationProxy.emit<boolean, SendEmailNotificationDto>(
-              'sendEmail',
+            this.notificationProxy.emit<boolean, SendVendorEmailDto>(
+              'sendVendorEmail',
               {
-                email: business.owner.email,
+                businessId: business.id,
+                roles: ['owner'],
                 subject: 'Business Registration Successful',
                 body: generateEmailBody('business-created', {
                   name: business.owner.fullName || '',

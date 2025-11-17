@@ -1,5 +1,8 @@
 export enum MessageTypeEnum {
   TEXT = 'TEXT',
+  AUDIO = 'AUDIO',
+  IMAGE = 'IMAGE',
+  FILE = 'FILE',
   BID = 'BID',
   SYSTEM = 'SYSTEM',
 }
@@ -41,6 +44,7 @@ export enum OrderInviteMediumEnum {
 
 export const ORDER_JOB_NAMES = {
   ORDER_INVITATIONS: 'ORDER_INVITATIONS',
+  PROCESS_ORDER_STATUS_CHANGE: 'PROCESS_ORDER_STATUS_CHANGE',
 };
 
 export class BidDetails {

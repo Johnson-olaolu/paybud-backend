@@ -11,6 +11,8 @@ import {
 } from 'typeorm';
 import { Order } from '../../entities/order.entity';
 import { OrderChatMessage } from './order-chat-message.entity';
+import { User } from '@app/shared/types/vendor';
+import { ClientUser } from '@app/shared/types/client';
 
 @Entity()
 export class OrderChat extends BaseEntity {
@@ -20,11 +22,15 @@ export class OrderChat extends BaseEntity {
   @OneToOne(() => Order, (order) => order.chat, { onDelete: 'CASCADE' })
   order: Relation<Order>;
 
-  @Column()
-  vendorId: string;
+  @Column({
+    type: 'simple-json',
+  })
+  vendorProfile: User;
 
-  @Column()
-  clientId: string;
+  @Column({
+    type: 'simple-json',
+  })
+  clientProfile: ClientUser;
 
   @OneToMany(() => OrderChatMessage, (message) => message.chat)
   messages: Relation<OrderChatMessage>[];

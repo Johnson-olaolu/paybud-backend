@@ -2,8 +2,8 @@ import { Controller } from '@nestjs/common';
 import { AppService } from './app.service';
 import { MessagePattern } from '@nestjs/microservices';
 import {
-  CreateAppNotificationBusinessDto,
   CreateAppNotificationDto,
+  CreateVendorAppNotificationDto,
 } from './dto/create-app-notification.dto';
 import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -17,15 +17,15 @@ export class AppController {
     @InjectQueue(JOB_NAMES.APP) private appQueue: Queue,
   ) {}
 
-  @MessagePattern('sendNotification')
+  @MessagePattern('sendClientNotification')
   async createNotification(data: CreateAppNotificationDto) {
     await this.appQueue.add('createNotification', data, {
       removeOnComplete: true,
     });
   }
 
-  @MessagePattern('sendNotificationToVendor')
-  async createNotifications(data: CreateAppNotificationBusinessDto) {
+  @MessagePattern('sendVendorNotification')
+  async createNotifications(data: CreateVendorAppNotificationDto) {
     await this.appQueue.add('createNotificationToVendor', data, {
       removeOnComplete: true,
     });

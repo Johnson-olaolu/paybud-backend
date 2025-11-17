@@ -24,6 +24,7 @@ export class CreateChatMessageDto {
   type: MessageTypeEnum;
 
   @Type(() => BidDetails)
+  @IsOptional()
   bidDetails: BidDetails;
 
   @IsUUID()

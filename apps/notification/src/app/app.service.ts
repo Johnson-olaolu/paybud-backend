@@ -8,8 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AppNotification } from './entitities/app-notifications.entity';
 import { Repository } from 'typeorm';
 import {
-  CreateAppNotificationBusinessDto,
   CreateAppNotificationDto,
+  CreateVendorAppNotificationDto,
 } from './dto/create-app-notification.dto';
 import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
@@ -26,7 +26,9 @@ export class AppService {
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
   ) {}
 
-  async createNotification(createAppNotificationDto: CreateAppNotificationDto) {
+  async createClientNotification(
+    createAppNotificationDto: CreateAppNotificationDto,
+  ) {
     const notification = await this.appNotificationRepository.save(
       createAppNotificationDto,
     );
@@ -38,14 +40,14 @@ export class AppService {
     return notification;
   }
 
-  async createNotificationToVendor(
-    createAppNotificationBusinessDto: CreateAppNotificationBusinessDto,
+  async createVendorNotification(
+    createAppNotificationBusinessDto: CreateVendorAppNotificationDto,
   ) {
     const users = await lastValueFrom(
-      this.vendorProxy.send<User[]>(
-        'findUserByBusinessId',
-        createAppNotificationBusinessDto.businessId,
-      ),
+      this.vendorProxy.send<User[]>('findUserByBusiness', {
+        businessId: createAppNotificationBusinessDto.businessId,
+        roles: createAppNotificationBusinessDto.roles,
+      }),
     );
     for (const user of users) {
       const notification = await this.appNotificationRepository.save({
@@ -80,7 +82,6 @@ export class AppService {
       .orderBy('notification.createdAt', 'DESC')
       .take(limit)
       .getMany();
-      
     return notifications;
   }
 

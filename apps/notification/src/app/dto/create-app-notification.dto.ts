@@ -36,7 +36,7 @@ export class CreateAppNotificationDto {
   data?: any;
 }
 
-export class CreateAppNotificationBusinessDto {
+export class CreateVendorAppNotificationDto {
   @IsUUID()
   businessId: string;
 
@@ -56,10 +56,10 @@ export class CreateAppNotificationBusinessDto {
   @IsOptional()
   popup?: boolean;
 
-  @IsString()
-  @IsNotEmpty()
-  clientType: 'vendor' | 'client' | 'admin';
-
   @IsOptional()
   data?: any;
+
+  @IsOptional()
+  @IsString({ each: true })
+  roles?: string[];
 }
