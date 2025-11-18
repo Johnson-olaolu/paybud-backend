@@ -21,10 +21,13 @@ import { Order } from '../entities/order.entity';
 import { Business } from '@app/shared/types/vendor';
 import { lastValueFrom } from 'rxjs';
 import { ClientUser } from '@app/shared/types/client';
-import { SendAppNotificationDto } from '@app/shared/dto/notification.dto';
 import { addDays } from 'date-fns';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import {
+  SendClientAppNotificationDto,
+  SendVendorAppNotificationDto,
+} from '@app/shared/dto/notification.dto';
 
 @Injectable()
 export class OrderInvitationService implements OnModuleInit {
@@ -95,15 +98,16 @@ export class OrderInvitationService implements OnModuleInit {
         },
       });
       if (client) {
-        this.notificationProxy.emit('sendNotification', {
-          userId: client.id,
-          action: 'order:invitation',
-          clientType: 'client',
-          popup: true,
-          title: 'New Order Invitation',
-          message: `You have a new order invitation from ${vendor.name}.`,
-          data: { orderId: order.id, invitationId: savedInvitation.id },
-        } as SendAppNotificationDto);
+        this.notificationProxy.emit<boolean, SendClientAppNotificationDto>(
+          'sendClientAppNotification',
+          {
+            clientId: client.id,
+            action: 'order:invitation',
+            popup: true,
+            message: `You have a new order invitation from ${vendor.name}.`,
+            data: { orderId: order.id, invitationId: savedInvitation.id },
+          },
+        );
       }
       await queryRunner.commitTransaction();
       return savedInvitation;
@@ -137,6 +141,39 @@ export class OrderInvitationService implements OnModuleInit {
         invitation.vendorNumber = invitationDetails.phoneNumber;
       }
       const savedInvitation = await queryRunner.manager.save(invitation);
+      const vendor = await lastValueFrom(
+        this.vendorProxy.send<Business>('findBusinessByEmailOrPhone', {
+          email: invitation.vendorEmail,
+          phoneNumber: invitation.vendorNumber,
+        }),
+      ).catch(() => {});
+      this.notificationProxy.emit('sendEmail', {
+        to: invitation.vendorEmail,
+        subject: 'New Order Invitation',
+        template: 'vendor-invitation',
+        context: {
+          orderId: order.id,
+          orderTitle: order.title,
+          orderNumber: order.id,
+          orderDescription: '',
+          clientName: client.fullName,
+          clientEmail: client.email,
+          clientPhoneNumber: client.phoneNumber,
+          invitationLink: '',
+        },
+      });
+      if (vendor) {
+        this.notificationProxy.emit<boolean, SendVendorAppNotificationDto>(
+          'sendVendorAppNotification',
+          {
+            businessId: vendor.id,
+            action: 'order:invitation',
+            popup: true,
+            message: `You have a new order invitation from ${vendor.name}.`,
+            data: { orderId: order.id, invitationId: savedInvitation.id },
+          },
+        );
+      }
       return savedInvitation;
     } catch (error) {
       await queryRunner.rollbackTransaction();

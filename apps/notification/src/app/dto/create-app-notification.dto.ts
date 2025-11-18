@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { NotificationTypeEnum } from '../../utils/constants';
 
-export class CreateAppNotificationDto {
+export class CreateClientAppNotificationDto {
   @IsUUID()
   userId: string;
 
@@ -27,10 +27,6 @@ export class CreateAppNotificationDto {
   @IsBoolean()
   @IsOptional()
   popup?: boolean;
-
-  @IsString()
-  @IsNotEmpty()
-  clientType: 'vendor' | 'client' | 'admin';
 
   @IsOptional()
   data?: any;

@@ -12,15 +12,21 @@ import { lastValueFrom } from 'rxjs';
 import { Business } from '@app/shared/types/vendor';
 import { ClientUser } from '@app/shared/types/client';
 import { OrderChatService } from '../chat/chat.service';
+import {
+  SendClientAppNotificationDto,
+  SendVendorAppNotificationDto,
+} from '@app/shared/dto/notification.dto';
 
 @Processor(ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE)
-export class OrderWorker extends WorkerHost {
+export class OrderStatusWorker extends WorkerHost {
   constructor(
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
     private orderChatService: OrderChatService,
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
     @Inject(RABBITMQ_QUEUES.CLIENT) private clientProxy: ClientProxy,
+    @Inject(RABBITMQ_QUEUES.NOTIFICATION)
+    private notificationProxy: ClientProxy,
   ) {
     super();
   }
@@ -28,11 +34,15 @@ export class OrderWorker extends WorkerHost {
   async process(job: Job<{ id: string }, any, OrderStatusEnum>): Promise<any> {
     const { id } = job.data;
     switch (job.name) {
-      case OrderStatusEnum.PENDING_PAYMENT: {
+      case OrderStatusEnum.ACCEPTED: {
         const order = await this.orderRepository.findOne({
           where: { id },
           relations: {},
         });
+        if (!order) {
+          throw new BadRequestException('Order not found');
+        }
+        order.status = OrderStatusEnum.ACCEPTED;
         const vendor = await lastValueFrom(
           this.vendorProxy.send<Business>('findOneBusiness', order?.vendorId),
         ).catch((error) => {
@@ -44,8 +54,34 @@ export class OrderWorker extends WorkerHost {
         ).catch((error) => {
           throw new BadRequestException(error?.message);
         });
-        void this.orderChatService.createChat(order!, vendor, client);
+        void this.orderChatService.createChat(order, vendor, client);
+        //send client notifications
+        void this.notificationProxy.emit<boolean, SendClientAppNotificationDto>(
+          'sendClientNotification',
+          {
+            clientId: vendor.id,
+            action: 'order:accepted',
+            popup: true,
+            message: `Your order #${order?.id} is now pending payment.`,
+            data: order,
+          },
+        );
+
+        //send vendor notifications
+        void this.notificationProxy.emit<boolean, SendVendorAppNotificationDto>(
+          'sendVendorNotification',
+          {
+            businessId: vendor.id,
+            action: 'order:pending_payment',
+            popup: true,
+            message: `Order #${order?.id} is now pending payment.`,
+            data: order,
+          },
+        );
+        return order.save();
       }
+      default:
+        throw new BadRequestException('Invalid job name');
     }
   }
 }

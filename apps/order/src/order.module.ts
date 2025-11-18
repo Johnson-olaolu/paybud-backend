@@ -22,6 +22,8 @@ import { OrderInvitationService } from './services/order-invitation.service';
 import { OrderItemService } from './services/order-item.service';
 import { OrderInvitation } from './entities/order-invitation.entity';
 import { ORDER_JOB_NAMES } from './utils/constants';
+import { OrderInvitationWorker } from './workers/order-invitation.worker';
+import { OrderStatusWorker } from './workers/order-status.worker';
 
 @Module({
   imports: [
@@ -72,6 +74,9 @@ import { ORDER_JOB_NAMES } from './utils/constants';
     BullModule.registerQueue({
       name: ORDER_JOB_NAMES.ORDER_INVITATIONS,
     }),
+    BullModule.registerQueue({
+      name: ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE,
+    }),
     DatabaseModule,
     RabbitmqModule,
     RabbitmqModule.register({ name: RABBITMQ_QUEUES.NOTIFICATION }),
@@ -89,6 +94,12 @@ import { ORDER_JOB_NAMES } from './utils/constants';
     ]),
   ],
   controllers: [OrderController],
-  providers: [OrderService, OrderInvitationService, OrderItemService],
+  providers: [
+    OrderService,
+    OrderInvitationService,
+    OrderItemService,
+    OrderInvitationWorker,
+    OrderStatusWorker,
+  ],
 })
 export class OrderModule {}

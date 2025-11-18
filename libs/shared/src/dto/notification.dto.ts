@@ -8,9 +8,9 @@ import {
   IsUUID,
 } from 'class-validator';
 
-export class SendAppNotificationDto {
+export class SendClientAppNotificationDto {
   @IsUUID()
-  userId: string;
+  clientId: string;
 
   @IsString()
   @IsNotEmpty()
@@ -28,12 +28,35 @@ export class SendAppNotificationDto {
   @IsOptional()
   popup?: boolean;
 
+  @IsOptional()
+  data?: any;
+}
+
+export class SendVendorAppNotificationDto {
+  @IsUUID()
+  businessId: string;
+
   @IsString()
   @IsNotEmpty()
-  clientType: 'vendor' | 'client' | 'admin';
+  message: string;
+
+  @IsString()
+  @IsNotEmpty()
+  action: string;
+
+  @IsEnum(['info', 'warning', 'error', 'success'])
+  @IsOptional()
+  type?: 'info' | 'warning' | 'error' | 'success';
+  @IsBoolean()
+  @IsOptional()
+  popup?: boolean;
 
   @IsOptional()
   data?: any;
+
+  @IsOptional()
+  @IsString({ each: true })
+  roles?: string[];
 }
 
 export class SendEmailNotificationDto {

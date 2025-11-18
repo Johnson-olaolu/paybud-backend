@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AppNotification } from './entitities/app-notifications.entity';
 import { Repository } from 'typeorm';
 import {
-  CreateAppNotificationDto,
+  CreateClientAppNotificationDto,
   CreateVendorAppNotificationDto,
 } from './dto/create-app-notification.dto';
 import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
@@ -27,11 +27,12 @@ export class AppService {
   ) {}
 
   async createClientNotification(
-    createAppNotificationDto: CreateAppNotificationDto,
+    createAppNotificationDto: CreateClientAppNotificationDto,
   ) {
-    const notification = await this.appNotificationRepository.save(
-      createAppNotificationDto,
-    );
+    const notification = await this.appNotificationRepository.save({
+      ...createAppNotificationDto,
+      clientType: 'client',
+    });
     const notifications = await this.getUserNotifications({
       userId: createAppNotificationDto.userId,
     });

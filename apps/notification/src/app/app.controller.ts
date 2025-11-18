@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { AppService } from './app.service';
 import { MessagePattern } from '@nestjs/microservices';
 import {
-  CreateAppNotificationDto,
+  CreateClientAppNotificationDto,
   CreateVendorAppNotificationDto,
 } from './dto/create-app-notification.dto';
 import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
@@ -18,7 +18,7 @@ export class AppController {
   ) {}
 
   @MessagePattern('sendClientNotification')
-  async createNotification(data: CreateAppNotificationDto) {
+  async createNotification(data: CreateClientAppNotificationDto) {
     await this.appQueue.add('createNotification', data, {
       removeOnComplete: true,
     });

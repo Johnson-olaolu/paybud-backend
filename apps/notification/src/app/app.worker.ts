@@ -3,7 +3,7 @@ import { JOB_NAMES } from '../utils/constants';
 import { Job } from 'bullmq';
 import { AppService } from './app.service';
 import {
-  CreateAppNotificationDto,
+  CreateClientAppNotificationDto,
   CreateVendorAppNotificationDto,
 } from './dto/create-app-notification.dto';
 import { GetUserNotificationsDto } from './dto/get-user-notifications.dto';
@@ -16,7 +16,7 @@ export class AppNotificationWorker extends WorkerHost {
 
   async process(
     job: Job<
-      | CreateAppNotificationDto
+      | CreateClientAppNotificationDto
       | GetUserNotificationsDto
       | CreateVendorAppNotificationDto
       | { notificationId: string }
@@ -34,7 +34,7 @@ export class AppNotificationWorker extends WorkerHost {
     switch (job.name) {
       case 'createNotification':
         return await this.appNotificationService.createClientNotification(
-          job.data as CreateAppNotificationDto,
+          job.data as CreateClientAppNotificationDto,
         );
       case 'createNotificationToVendor':
         return await this.appNotificationService.createVendorNotification(
