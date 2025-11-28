@@ -142,20 +142,20 @@ export class OrderInvitationService implements OnModuleInit {
           phoneNumber: invitation.vendorNumber,
         }),
       ).catch(() => {});
+      const body = generateEmailBody('vendor-invitation', {
+        orderId: order.id,
+        orderTitle: order.title,
+        orderNumber: order.id,
+        orderDescription: '',
+        clientName: client.fullName,
+        clientEmail: client.email,
+        clientPhoneNumber: client.phoneNumber,
+        invitationLink: '',
+      });
       this.notificationProxy.emit('sendEmail', {
-        to: invitation.vendorEmail,
+        email: invitation.vendorEmail,
         subject: 'New Order Invitation',
-        template: 'vendor-invitation',
-        context: {
-          orderId: order.id,
-          orderTitle: order.title,
-          orderNumber: order.id,
-          orderDescription: '',
-          clientName: client.fullName,
-          clientEmail: client.email,
-          clientPhoneNumber: client.phoneNumber,
-          invitationLink: '',
-        },
+        body,
       });
       if (vendor) {
         this.notificationProxy.emit<boolean, SendVendorAppNotificationDto>(
