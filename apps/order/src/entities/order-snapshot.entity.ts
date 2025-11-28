@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
+import type { Order as OrderType } from '@app/shared/types/order';
 
 @Entity()
 export class OrderSnapshot extends BaseEntity {
@@ -24,7 +25,7 @@ export class OrderSnapshot extends BaseEntity {
   @Column({
     type: 'json',
   })
-  data: Omit<Order, 'id'>;
+  data: Omit<OrderType, 'id'>;
 
   @CreateDateColumn()
   createdAt: Date;

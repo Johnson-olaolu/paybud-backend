@@ -15,7 +15,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
-import { OrderItemStatusEnum } from '../utils/constants';
+import {
+  OrderItemImportanceLevelEnum,
+  OrderItemStatusEnum,
+} from '../utils/constants';
 import { File } from '@app/shared/types/file';
 import { fetchFileById } from '@app/shared/utils/misc';
 
@@ -34,14 +37,17 @@ export class OrderItem extends BaseEntity {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ default: false })
-  optional: boolean;
-
   @Column({
     type: 'text',
     default: OrderItemStatusEnum.PENDING,
   })
   status: OrderItemStatusEnum;
+
+  @Column({
+    type: 'text',
+    default: OrderItemImportanceLevelEnum.NECESSITY,
+  })
+  importanceLevel: OrderItemImportanceLevelEnum;
 
   @Column('simple-array', { default: [] })
   fileIds: string[];
@@ -60,8 +66,6 @@ export class OrderItem extends BaseEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // @AfterInsert()
-  // @AfterUpdate()
   @AfterLoad()
   async loadFiles() {
     for (const fileId of this.fileIds) {

@@ -9,7 +9,8 @@ export enum MessageTypeEnum {
 
 export enum OrderStatusEnum {
   DRAFT = 'DRAFT',
-  ACCEPTED = 'ACCEPTED',
+  INVITATION_SENT = 'INVITATION_SENT',
+  INVITATION_ACCEPTED = 'INVITATION_ACCEPTED',
   PENDING_CONFIRMATION = 'PENDING_CONFIRMATION',
   PENDING_PAYMENT = 'PENDING_PAYMENT',
   ACTIVE = 'ACTIVE',
@@ -22,6 +23,12 @@ export enum OrderItemStatusEnum {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
+}
+
+export enum OrderItemImportanceLevelEnum {
+  ADDON = 'ADDON',
+  NECESSITY = 'NECESSITY',
+  ABSOLUTE_NECESSITY = 'ABSOLUTE_NECESSITY',
 }
 
 export enum InvitationStatusEnum {

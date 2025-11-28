@@ -1,6 +1,6 @@
 import {
   IsArray,
-  IsDate,
+  IsDateString,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -41,16 +41,20 @@ export class CreateOrderDto {
   @IsOptional()
   amount: number;
 
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   startDate?: Date;
 
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   endDate?: Date;
 
   @Type(() => InviteDetailsDto)
   inviteDetails: InviteDetailsDto;
+
+  @IsString()
+  @IsOptional()
+  feesToBePaidBy?: 'VENDOR' | 'CLIENT';
 
   @IsArray()
   @ValidateNested({ each: true })

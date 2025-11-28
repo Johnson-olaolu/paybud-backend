@@ -14,11 +14,11 @@ import {
 } from 'typeorm';
 import { OrderInvoice } from './order-invoice.entity';
 import { OrderSnapshot } from './order-snapshot.entity';
-import { OrderItem } from './order-item.entity';
 import { BadRequestException } from '@nestjs/common';
 import { OrderStatusEnum } from '../utils/constants';
 import { OrderChat } from '../chat/entities/order-chat.entity';
 import { OrderInvitation } from './order-invitation.entity';
+import { OrderItem } from './order-item.entity';
 
 @Entity()
 export class Order extends BaseEntity {
@@ -48,10 +48,10 @@ export class Order extends BaseEntity {
   invoices: Relation<OrderInvoice>[];
 
   @OneToMany(() => OrderSnapshot, (snapshot) => snapshot.order)
-  snapshots: Relation<Order>;
+  snapshots: Relation<OrderSnapshot>[];
 
   @OneToMany(() => OrderItem, (item) => item.order)
-  items: Relation<OrderItem>;
+  items: Relation<OrderItem>[];
 
   @Column({
     type: 'text',
@@ -73,15 +73,15 @@ export class Order extends BaseEntity {
 
   @Column({
     type: 'text',
-    default: 'vendor',
+    default: 'VENDOR',
   })
-  feesToBePaidBy: 'client' | 'vendor';
+  feesToBePaidBy: 'VENDOR' | 'CLIENT';
 
   @Column({
     type: 'text',
-    default: 'vendor',
+    default: 'VENDOR',
   })
-  createdBy: 'client' | 'vendor';
+  createdBy: 'VENDOR' | 'CLIENT';
 
   @Column({
     type: 'json',

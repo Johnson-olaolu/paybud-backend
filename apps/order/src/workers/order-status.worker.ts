@@ -34,7 +34,7 @@ export class OrderStatusWorker extends WorkerHost {
   async process(job: Job<{ id: string }, any, OrderStatusEnum>): Promise<any> {
     const { id } = job.data;
     switch (job.name) {
-      case OrderStatusEnum.ACCEPTED: {
+      case OrderStatusEnum.INVITATION_ACCEPTED: {
         const order = await this.orderRepository.findOne({
           where: { id },
           relations: {},
@@ -42,7 +42,7 @@ export class OrderStatusWorker extends WorkerHost {
         if (!order) {
           throw new BadRequestException('Order not found');
         }
-        order.status = OrderStatusEnum.ACCEPTED;
+        order.status = OrderStatusEnum.INVITATION_ACCEPTED;
         const vendor = await lastValueFrom(
           this.vendorProxy.send<Business>('findOneBusiness', order?.vendorId),
         ).catch((error) => {

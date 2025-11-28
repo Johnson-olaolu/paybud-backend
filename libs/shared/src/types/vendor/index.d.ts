@@ -14,7 +14,7 @@ export interface User extends IDocument {
   fullName?: string;
   isEmailVerified: boolean;
   roleName: string;
-  businessId: string;
+  business?: Business;
   profile?: Profile;
   role?: Role;
 }

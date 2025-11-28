@@ -11,8 +11,8 @@ import {
 } from 'typeorm';
 import { Order } from '../../entities/order.entity';
 import { OrderChatMessage } from './order-chat-message.entity';
-import { User } from '@app/shared/types/vendor';
-import { ClientUser } from '@app/shared/types/client';
+import type { User } from '@app/shared/types/vendor';
+import type { ClientUser } from '@app/shared/types/client';
 
 @Entity()
 export class OrderChat extends BaseEntity {

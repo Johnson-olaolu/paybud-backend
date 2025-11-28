@@ -1,6 +1,10 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { SendEmailDto } from './dto/send-email.dto';
+import {
+  SendClientEmailDto,
+  SendEmailDto,
+  SendVendorEmailDto,
+} from './dto/send-email.dto';
 import { InjectQueue } from '@nestjs/bullmq';
 import { JOB_NAMES } from '../utils/constants';
 import { Queue } from 'bullmq';
@@ -21,7 +25,7 @@ export class EmailController {
   }
 
   @MessagePattern('sendVendorEmail')
-  async sendVendorEmail(@Payload() sendEmailDto: SendEmailDto) {
+  async sendVendorEmail(@Payload() sendEmailDto: SendVendorEmailDto) {
     await this.emailQueue.add('send-vendor-email-job', sendEmailDto, {
       removeOnComplete: true,
     });
@@ -31,8 +35,8 @@ export class EmailController {
     };
   }
 
-  @MessagePattern('sendClientEmail ')
-  async sendClientEmail(@Payload() sendEmailDto: SendEmailDto) {
+  @MessagePattern('sendClientEmail')
+  async sendClientEmail(@Payload() sendEmailDto: SendClientEmailDto) {
     await this.emailQueue.add('send-client-email-job', sendEmailDto, {
       removeOnComplete: true,
     });

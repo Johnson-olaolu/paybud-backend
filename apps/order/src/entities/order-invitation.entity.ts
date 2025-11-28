@@ -9,7 +9,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
-import { InvitationStatusEnum } from '../utils/constants';
+import {
+  InvitationStatusEnum,
+  OrderInviteMediumEnum,
+} from '../utils/constants';
 
 @Entity()
 export class OrderInvitation extends BaseEntity {
@@ -22,8 +25,10 @@ export class OrderInvitation extends BaseEntity {
   @Column()
   type: 'VENDOR' | 'CLIENT';
 
-  @Column()
-  medium: 'EMAIL' | 'SMS';
+  @Column({
+    type: 'text',
+  })
+  medium: OrderInviteMediumEnum;
 
   @Column({ nullable: true })
   vendorId: string;

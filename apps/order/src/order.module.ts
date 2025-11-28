@@ -92,6 +92,7 @@ import { OrderStatusWorker } from './workers/order-status.worker';
       OrderChatModule,
       OrderInvitation,
     ]),
+    OrderChatModule,
   ],
   controllers: [OrderController],
   providers: [

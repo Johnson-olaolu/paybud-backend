@@ -20,6 +20,9 @@ import { Business } from '../../../libs/shared/src/types/vendor';
 import { ClientUser } from '../../../libs/shared/src/types/client';
 import { OrderItemService } from './services/order-item.service';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { InvitationStatusEnum, ORDER_JOB_NAMES } from './utils/constants';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class OrderService {
@@ -30,6 +33,8 @@ export class OrderService {
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
     @Inject(RABBITMQ_QUEUES.CLIENT) private clientProxy: ClientProxy,
     private dataSource: DataSource,
+    @InjectQueue(ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE)
+    private orderStatusChangeQueue: Queue,
   ) {}
 
   async vendorCreatesOrder(vendorCreateOrderDto: VendorCreateOrderDto) {
@@ -61,8 +66,10 @@ export class OrderService {
         savedOrder,
         vendor,
         vendorCreateOrderDto.inviteDetails,
+        queryRunner,
       );
       await queryRunner.commitTransaction();
+      return savedOrder;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error?.message);
@@ -121,5 +128,41 @@ export class OrderService {
       throw new BadRequestException('Order not found');
     }
     return order;
+  }
+
+  async getClientInvitations(clientId: string, status?: InvitationStatusEnum) {
+    return this.orderInvitationService.getClientInvitations(clientId, status);
+  }
+
+  async getVendorInvitations(vendorId: string, status?: InvitationStatusEnum) {
+    return this.orderInvitationService.getVendorInvitations(vendorId, status);
+  }
+
+  async clientAcceptInvitation(invitationId: string, clientId: string) {
+    const orderInvitation =
+      await this.orderInvitationService.clientAcceptInvitation(
+        invitationId,
+        clientId,
+      );
+    await this.orderStatusChangeQueue.add(
+      ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE,
+      { id: orderInvitation.order.id },
+      { jobId: `process-order-status-change-${orderInvitation.order.id}` },
+    );
+    return orderInvitation;
+  }
+
+  async vendorAcceptInvitation(invitationId: string, vendorId: string) {
+    const orderInvitationQueue =
+      await this.orderInvitationService.vendorAcceptInvitation(
+        invitationId,
+        vendorId,
+      );
+    await this.orderStatusChangeQueue.add(
+      ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE,
+      { id: orderInvitationQueue.order.id },
+      { jobId: `process-order-status-change-${orderInvitationQueue.order.id}` },
+    );
+    return orderInvitationQueue;
   }
 }

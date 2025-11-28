@@ -64,12 +64,6 @@ export class AuthController {
       sameSite: 'none', // prevent CSRF
       path: '/', // available across the site
     });
-    //     res.cookie("session", token, {
-    //   httpOnly: true,     // can't be accessed by JS
-    //   secure: true,       // only over HTTPS
-    //   sameSite: "Strict", // prevent CSRF
-    //   path: "/",          // available across the site
-    // });
     return {
       success: true,
       message: 'user logged in successfully',

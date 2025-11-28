@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { BusinessModule } from './business/business.module';
 import { NotificationModule } from './notification/notification.module';
 import { FileModule } from './file/file.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   controllers: [VendorController],
@@ -18,6 +19,7 @@ import { FileModule } from './file/file.module';
     BusinessModule,
     NotificationModule,
     FileModule,
+    OrderModule,
   ],
 })
 export class VendorModule {}
