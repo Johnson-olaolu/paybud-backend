@@ -88,7 +88,11 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  FRONTEND_URL: string;
+  CLIENT_FRONTEND_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  VENDOR_FRONTEND_URL: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

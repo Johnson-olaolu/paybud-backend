@@ -1,10 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { VendorCreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import type { Order } from '@app/shared/types/order';
+import type {
+  InvitationStatusEnum,
+  Order,
+  OrderInvitation,
+} from '@app/shared/types/order';
 import { User } from '@app/shared/types/vendor';
 
 @Injectable()
@@ -23,19 +26,27 @@ export class OrderService {
     return order;
   }
 
-  findAll() {
-    return `This action returns all order`;
+  async getVendorOrders(user: User, status: InvitationStatusEnum) {
+    const orders = await lastValueFrom(
+      this.orderProxy.send<OrderInvitation[]>('getVendorInvitations', {
+        vendorId: user.business?.id,
+        status,
+      }),
+    ).catch((err) => {
+      throw new RpcException(err);
+    });
+    return orders;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
-  }
-
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async acceptInvitation(id: string, user: User) {
+    const invitation = await lastValueFrom(
+      this.orderProxy.send<OrderInvitation>('vendorAcceptInvitation', {
+        invitationId: id,
+        vendorId: user.business?.id,
+      }),
+    ).catch((err) => {
+      throw new RpcException(err);
+    });
+    return invitation;
   }
 }

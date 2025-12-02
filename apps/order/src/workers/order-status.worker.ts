@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +17,7 @@ import {
   SendClientAppNotificationDto,
   SendVendorAppNotificationDto,
 } from '@app/shared/dto/notification.dto';
+import { generateEmailBody } from '../utils/misc';
 
 @Processor(ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE)
 export class OrderStatusWorker extends WorkerHost {
@@ -31,10 +33,11 @@ export class OrderStatusWorker extends WorkerHost {
     super();
   }
 
-  async process(job: Job<{ id: string }, any, OrderStatusEnum>): Promise<any> {
-    const { id } = job.data;
+  async process(job: Job<any, any, OrderStatusEnum>): Promise<any> {
     switch (job.name) {
       case OrderStatusEnum.INVITATION_ACCEPTED: {
+        const { id, clientId, vendorId } = job.data;
+        //Get order and update status
         const order = await this.orderRepository.findOne({
           where: { id },
           relations: {},
@@ -43,19 +46,37 @@ export class OrderStatusWorker extends WorkerHost {
           throw new BadRequestException('Order not found');
         }
         order.status = OrderStatusEnum.INVITATION_ACCEPTED;
+
+        //fetch vendor and client details
         const vendor = await lastValueFrom(
-          this.vendorProxy.send<Business>('findOneBusiness', order?.vendorId),
+          this.vendorProxy.send<Business>('findOneBusiness', vendorId),
         ).catch((error) => {
           throw new BadRequestException(error?.message);
         });
 
         const client = await lastValueFrom(
-          this.clientProxy.send<ClientUser>('findOneClient', order?.clientId),
+          this.clientProxy.send<ClientUser>('findOneUser', clientId),
         ).catch((error) => {
           throw new BadRequestException(error?.message);
         });
         void this.orderChatService.createChat(order, vendor, client);
+
         //send client notifications
+        const clientAcceptanceEmailBody = generateEmailBody(
+          'client-invitation-accepted',
+          {
+            clientName: client?.fullName,
+            orderTitle: order?.title,
+            orderUrl: `${process.env.CLIENT_APP_URL}/order/${order?.id}`,
+            vendorBusiness: vendor.name,
+            vendorEmail: vendor.businessEmail,
+          },
+        );
+        void this.notificationProxy.emit('sendClientEmail', {
+          clientId: client.id,
+          subject: 'Vendor Accepted Your Order Invitation',
+          body: clientAcceptanceEmailBody,
+        });
         void this.notificationProxy.emit<boolean, SendClientAppNotificationDto>(
           'sendClientNotification',
           {
@@ -68,6 +89,22 @@ export class OrderStatusWorker extends WorkerHost {
         );
 
         //send vendor notifications
+        const vendorAcceptanceEmailBody = generateEmailBody(
+          'vendor-invitation-accepted',
+          {
+            vendorName: vendor.name,
+            clientName: client?.fullName,
+            clientEmail: client?.email,
+            orderTitle: order?.title,
+            orderUrl: `${process.env.VENDOR_APP_URL}/dashboard/order/${order?.id}`,
+          },
+        );
+        void this.notificationProxy.emit('sendVendorEmail', {
+          businessId: vendor.id,
+          subject: 'You Accepted an Order Invitation',
+          body: vendorAcceptanceEmailBody,
+          // roles: ['admin', 'manager'],
+        });
         void this.notificationProxy.emit<boolean, SendVendorAppNotificationDto>(
           'sendVendorNotification',
           {
@@ -78,6 +115,37 @@ export class OrderStatusWorker extends WorkerHost {
             data: order,
           },
         );
+
+        // Save the updated order status
+        return order.save();
+      }
+      case OrderStatusEnum.CLIENT_APPROVED: {
+        const { id } = job.data;
+        //Get order and update status
+        const order = await this.orderRepository.findOne({
+          where: { id },
+          relations: {},
+        });
+        if (!order) {
+          throw new BadRequestException('Order not found');
+        }
+        order.status = OrderStatusEnum.CLIENT_APPROVED;
+        //send notifications
+        this.notificationProxy.emit('sendVendorNotification', {
+          businessId: order.vendorId,
+          action: 'order:client_approved',
+          popup: true,
+          message: `Client has approved order #${order.id}.`,
+          data: order,
+        });
+        this.notificationProxy.emit('sendVendorEmail', {
+          businessId: order.vendorId,
+          subject: 'Client Approved Order',
+          body: generateEmailBody('vendor-client-approved-order', {
+            orderTitle: order.title,
+            orderUrl: `${process.env.VENDOR_APP_URL}/dashboard/order/${order.id}`,
+          }),
+        });
         return order.save();
       }
       default:

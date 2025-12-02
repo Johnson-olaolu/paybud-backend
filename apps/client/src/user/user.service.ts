@@ -1,6 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -15,8 +14,6 @@ import { EnvironmentVariables } from '../config/env.config';
 import { ConfigService } from '@nestjs/config';
 import ms, { StringValue } from 'ms';
 import { PaystackService } from '../services/paystack/paystack.service';
-
-//  ${header({title: 'Gift Card Purchase Successful', username: `👋`})}
 
 @Injectable()
 export class UserService {
@@ -126,13 +123,5 @@ export class UserService {
       throw new BadRequestException(`User not found`);
     }
     return user;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }

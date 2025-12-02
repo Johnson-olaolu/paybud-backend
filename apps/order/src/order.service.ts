@@ -16,13 +16,20 @@ import { DataSource, Repository } from 'typeorm';
 import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { Business } from '../../../libs/shared/src/types/vendor';
-import { ClientUser } from '../../../libs/shared/src/types/client';
 import { OrderItemService } from './services/order-item.service';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { InvitationStatusEnum, ORDER_JOB_NAMES } from './utils/constants';
+import {
+  InvitationStatusEnum,
+  ORDER_JOB_NAMES,
+  OrderStatusEnum,
+} from './utils/constants';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import type { ClientUser } from '@app/shared/types/client';
+import type { Business } from '@app/shared/types/vendor';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import ms from 'ms';
 
 @Injectable()
 export class OrderService {
@@ -35,6 +42,7 @@ export class OrderService {
     private dataSource: DataSource,
     @InjectQueue(ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE)
     private orderStatusChangeQueue: Queue,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async vendorCreatesOrder(vendorCreateOrderDto: VendorCreateOrderDto) {
@@ -107,6 +115,7 @@ export class OrderService {
         savedOrder,
         client,
         clientCreateOrderDto.inviteDetails,
+        queryRunner,
       );
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -120,6 +129,8 @@ export class OrderService {
   async updateOrder(updateOrderDto: UpdateOrderDto) {
     const order = await this.findOne(updateOrderDto.id);
     order.amount = updateOrderDto.amount;
+    order.feesToBePaidBy = updateOrderDto.feesToBePaidBy!;
+    return order.save();
   }
 
   async findOne(id: string) {
@@ -145,24 +156,83 @@ export class OrderService {
         clientId,
       );
     await this.orderStatusChangeQueue.add(
-      ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE,
-      { id: orderInvitation.order.id },
-      { jobId: `process-order-status-change-${orderInvitation.order.id}` },
+      OrderStatusEnum.INVITATION_ACCEPTED,
+      {
+        id: orderInvitation.order.id,
+        clientId: orderInvitation.clientId,
+        vendorId: orderInvitation.vendorId,
+      },
+      {
+        jobId: `process-order-status-change-${orderInvitation.order.id}-${OrderStatusEnum.INVITATION_ACCEPTED}`,
+      },
     );
     return orderInvitation;
   }
 
   async vendorAcceptInvitation(invitationId: string, vendorId: string) {
-    const orderInvitationQueue =
+    const orderInvitation =
       await this.orderInvitationService.vendorAcceptInvitation(
         invitationId,
         vendorId,
       );
     await this.orderStatusChangeQueue.add(
-      ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE,
-      { id: orderInvitationQueue.order.id },
-      { jobId: `process-order-status-change-${orderInvitationQueue.order.id}` },
+      OrderStatusEnum.INVITATION_ACCEPTED,
+      {
+        id: orderInvitation.order.id,
+        clientId: orderInvitation.clientId,
+        vendorId: orderInvitation.vendorId,
+      },
+      {
+        jobId: `process-order-status-change-${orderInvitation.order.id}-${OrderStatusEnum.INVITATION_ACCEPTED}`,
+      },
     );
-    return orderInvitationQueue;
+    return orderInvitation;
   }
+
+  async deleteOrder(id: string) {
+    const order = await this.findOne(id);
+    if (order.status !== OrderStatusEnum.DRAFT) {
+      throw new BadRequestException('Only draft orders can be deleted');
+    }
+    await this.orderInvitationService.cancelOrderInvitations(order);
+    await this.orderRepository.softDelete({ id: order.id });
+    return true;
+  }
+
+  async cancelOrder(id: string) {
+    const order = await this.findOne(id);
+    const allowedStatuses = [
+      OrderStatusEnum.PENDING_CONFIRMATION,
+      OrderStatusEnum.PENDING_PAYMENT,
+    ];
+    if (!allowedStatuses.includes(order.status)) {
+      throw new BadRequestException(
+        `Only orders with status ${allowedStatuses.join(
+          ' or ',
+        )} can be cancelled`,
+      );
+    }
+    order.status = OrderStatusEnum.CANCELLED;
+    await this.orderRepository.save(order);
+    return order;
+  }
+
+  async clientApprovesOrder(id: string) {}
+
+  // async vendorCancelActiveOrder(id: string) {
+  //   const order = await this.orderRepository.findOne({
+  //     where: { id, status: OrderStatusEnum.ACTIVE },
+  //   });
+  //   if (!order) {
+  //     throw new BadRequestException('Active Order not found');
+  //   }
+  //   const key = `order-cancel-${order.clientId}-${order.id}`;
+  //   const clientAcceptedCancel = await this.cacheManager.get<boolean>(key);
+  //   if (!clientAcceptedCancel) {
+  //     //send vendor notification to accept cancelation
+  //     const vendorKey = `order-cancel-vendor-${order.vendorId}-${order.id}`;
+  //     await this.cacheManager.set(vendorKey, true, ms('1d'));
+  //   }
+  // }
+  // async clientCancelActiveOrder(id: string) {}
 }

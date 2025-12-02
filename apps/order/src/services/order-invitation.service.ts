@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,6 +30,8 @@ import {
   SendVendorAppNotificationDto,
 } from '@app/shared/dto/notification.dto';
 import { generateEmailBody } from '../utils/misc';
+import { ConfigService } from '@nestjs/config';
+import { EnvironmentVariables } from '../config/env.config';
 
 @Injectable()
 export class OrderInvitationService implements OnModuleInit {
@@ -42,8 +45,9 @@ export class OrderInvitationService implements OnModuleInit {
     @Inject(RABBITMQ_QUEUES.CLIENT)
     private clientProxy: ClientProxy,
     private dataSource: DataSource,
-    @InjectQueue(ORDER_JOB_NAMES.ORDER_INVITATIONS)
+    @InjectQueue(ORDER_JOB_NAMES.ORDER_INVITATIONS_EXPIRATION_HANDLER)
     private orderInvitationQueue: Queue,
+    private configService: ConfigService<EnvironmentVariables>,
   ) {}
 
   async onModuleInit() {
@@ -66,6 +70,7 @@ export class OrderInvitationService implements OnModuleInit {
         expiresAt: addDays(new Date(), 7),
         type: 'CLIENT',
         medium: invitationDetails.medium,
+        vendorId: vendor.id,
       });
       if (invitationDetails.medium === OrderInviteMediumEnum.EMAIL) {
         invitation.clientEmail = invitationDetails.email;
@@ -80,16 +85,19 @@ export class OrderInvitationService implements OnModuleInit {
           phoneNumber: invitation.clientNumber,
         }),
       ).catch(() => {});
+      const invitationLink = client
+        ? `${this.configService.get('CLIENT_FRONTEND_URL')}/invitations/${savedInvitation.id}`
+        : `${this.configService.get('CLIENT_FRONTEND_URL')}/register?invitationId=${savedInvitation.id}`;
       const body = generateEmailBody('client-invitation', {
         orderId: order.id,
         orderTitle: order.title,
         orderNumber: order.id,
-        orderDescription: '',
+        orderDescription: order.description || '',
         businessName: vendor.name,
         vendorName: vendor.owner?.fullName,
         businessEmail: vendor.profile?.contactEmail,
         businessPhone: vendor.profile?.contactPhoneNumber,
-        invitationLink: '',
+        invitationLink,
       });
       this.notificationProxy.emit('sendEmail', {
         email: invitation.clientEmail,
@@ -98,7 +106,7 @@ export class OrderInvitationService implements OnModuleInit {
       });
       if (client) {
         this.notificationProxy.emit<boolean, SendClientAppNotificationDto>(
-          'sendClientAppNotification',
+          'sendClientNotification',
           {
             clientId: client.id,
             action: 'order:invitation',
@@ -118,16 +126,15 @@ export class OrderInvitationService implements OnModuleInit {
     order: Order,
     client: ClientUser,
     invitationDetails: InviteDetailsDto,
+    queryRunner: QueryRunner,
   ) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     try {
       const invitation = this.orderInvitationRepository.create({
         order,
         expiresAt: addDays(new Date(), 7),
         type: 'VENDOR',
+        medium: invitationDetails.medium,
+        clientId: client.id,
       });
       if (invitationDetails.medium === OrderInviteMediumEnum.EMAIL) {
         invitation.vendorEmail = invitationDetails.email;
@@ -171,24 +178,43 @@ export class OrderInvitationService implements OnModuleInit {
       }
       return savedInvitation;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error?.message);
-    } finally {
-      await queryRunner.release();
     }
   }
 
   async getClientInvitations(clientId: string, status?: InvitationStatusEnum) {
+    const client = await lastValueFrom(
+      this.clientProxy.send<ClientUser>('findOneUser', clientId),
+    ).catch((error) => {
+      throw new BadRequestException(error?.message);
+    });
     const invitations = await this.orderInvitationRepository.find({
-      where: { clientId, status },
+      where: [
+        { clientId, type: 'CLIENT', status },
+        { clientEmail: client.email, type: 'CLIENT', status },
+        // { clientNumber: client.phoneNumber, type: 'CLIENT', status },
+      ],
       order: { createdAt: 'DESC' },
     });
     return invitations;
   }
 
   async getVendorInvitations(vendorId: string, status?: InvitationStatusEnum) {
+    const vendor = await lastValueFrom(
+      this.vendorProxy.send<Business>('findOneBusiness ', vendorId),
+    ).catch((error) => {
+      throw new BadRequestException(error?.message);
+    });
     const invitations = await this.orderInvitationRepository.find({
-      where: { vendorId, status },
+      where: [
+        { vendorId, type: 'VENDOR', status },
+        { vendorEmail: vendor.owner?.email, type: 'VENDOR', status },
+        {
+          vendorNumber: vendor.profile?.contactPhoneNumber,
+          type: 'VENDOR',
+          status,
+        },
+      ],
       order: { createdAt: 'DESC' },
     });
     return invitations;
@@ -198,7 +224,6 @@ export class OrderInvitationService implements OnModuleInit {
     const invitation = await this.orderInvitationRepository.findOne({
       where: {
         id: invitationId,
-        clientId,
       },
       relations: { order: true },
     });
@@ -208,7 +233,20 @@ export class OrderInvitationService implements OnModuleInit {
     if (invitation.status === InvitationStatusEnum.EXPIRED) {
       throw new BadRequestException('Invitation has expired');
     }
+    if (invitation.status === InvitationStatusEnum.ACCEPTED) {
+      throw new BadRequestException('Invitation has already been accepted');
+    }
+    if (invitation.status === InvitationStatusEnum.CANCELLED) {
+      throw new BadRequestException(
+        'The order for this invitation has been cancelled',
+      );
+    }
+    if (invitation.status === InvitationStatusEnum.DECLINED) {
+      throw new BadRequestException('Invitation has been declined');
+    }
+    invitation.clientId = clientId;
     invitation.status = InvitationStatusEnum.ACCEPTED;
+    invitation.respondedAt = new Date();
     await invitation.save();
     return invitation;
   }
@@ -217,9 +255,8 @@ export class OrderInvitationService implements OnModuleInit {
     const invitation = await this.orderInvitationRepository.findOne({
       where: {
         id: invitationId,
-        vendorId,
-        status: InvitationStatusEnum.PENDING,
       },
+      relations: { order: true },
     });
     if (!invitation) {
       throw new BadRequestException('Invitation not found');
@@ -227,7 +264,20 @@ export class OrderInvitationService implements OnModuleInit {
     if (invitation.status === InvitationStatusEnum.EXPIRED) {
       throw new BadRequestException('Invitation has expired');
     }
+    if (invitation.status === InvitationStatusEnum.ACCEPTED) {
+      throw new BadRequestException('Invitation has already been accepted');
+    }
+    if (invitation.status === InvitationStatusEnum.CANCELLED) {
+      throw new BadRequestException(
+        'The order for this invitation has been cancelled',
+      );
+    }
+    if (invitation.status === InvitationStatusEnum.DECLINED) {
+      throw new BadRequestException('Invitation has been declined');
+    }
+    invitation.vendorId = vendorId;
     invitation.status = InvitationStatusEnum.ACCEPTED;
+    invitation.respondedAt = new Date();
     await invitation.save();
     return invitation;
   }
@@ -240,7 +290,59 @@ export class OrderInvitationService implements OnModuleInit {
       throw new BadRequestException('Invitation not found');
     }
     invitation.status = InvitationStatusEnum.DECLINED;
+    if (invitation.clientId) {
+      const client = await lastValueFrom(
+        this.clientProxy.send<ClientUser>('findOneClient', invitation.clientId),
+      ).catch((error) => {
+        throw new BadRequestException(error?.message);
+      });
+      this.notificationProxy.emit<boolean, SendClientAppNotificationDto>(
+        'sendClientNotification',
+        {
+          clientId: client.id,
+          action: 'order:invitation:declined',
+          popup: true,
+          message: `Your order invitation has been declined.`,
+          data: { orderId: invitation.order.id, invitationId: invitation.id },
+        },
+      );
+    }
+    if (invitation.vendorId) {
+      const vendor = await lastValueFrom(
+        this.vendorProxy.send<Business>(
+          'findBusinessById',
+          invitation.vendorId,
+        ),
+      ).catch((error) => {
+        throw new BadRequestException(error?.message);
+      });
+      this.notificationProxy.emit<boolean, SendVendorAppNotificationDto>(
+        'sendVendorAppNotification',
+        {
+          businessId: vendor.id,
+          action: 'order:invitation:declined',
+          popup: true,
+          message: `Your order invitation has been declined.`,
+          data: { orderId: invitation.order.id, invitationId: invitation.id },
+        },
+      );
+    }
     await invitation.save();
     return invitation;
+  }
+
+  async cancelOrderInvitations(order: Order) {
+    const result = await this.orderInvitationRepository.update(
+      {
+        order,
+      },
+      {
+        status: InvitationStatusEnum.CANCELLED,
+      },
+    );
+    if (result.affected === 0) {
+      throw new NotFoundException('No Order Invitations found');
+    }
+    return true;
   }
 }

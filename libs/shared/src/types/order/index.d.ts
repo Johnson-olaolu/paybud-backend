@@ -117,3 +117,10 @@ export interface OrderItem {
 
   updatedAt: Date;
 }
+
+export enum InvitationStatusEnum {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  DECLINED = 'DECLINED',
+  EXPIRED = 'EXPIRED',
+}

@@ -8,7 +8,7 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Not, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Profile } from './entities/profile.entity';
 import { User } from './entities/user.entity';
 import { generateAvatar, generateEmailBody } from '../utils /misc';
@@ -293,12 +293,12 @@ export class UserService {
   }
 
   async getUsersByBusiness(fetchUserByBusinessDto: FetchUserByBusinessDto) {
-    const users = await this.userRepository.findOne({
+    const users = await this.userRepository.find({
       where: {
         business: { id: fetchUserByBusinessDto.businessId },
         roleName: fetchUserByBusinessDto.roles
           ? In(fetchUserByBusinessDto.roles)
-          : Not(''),
+          : undefined,
       },
       relations: {
         profile: true,

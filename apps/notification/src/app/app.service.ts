@@ -34,7 +34,7 @@ export class AppService {
       clientType: 'client',
     });
     const notifications = await this.getUserNotifications({
-      userId: createAppNotificationDto.userId,
+      userId: createAppNotificationDto.clientId,
     });
     this.sendNotificationsToUser(notifications);
     if (createAppNotificationDto.popup) this.sendPopupToUser(notification);

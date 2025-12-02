@@ -1,26 +1,53 @@
-import { Injectable } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientCreateOrderDto } from './dto/create-order.dto';
+import { RABBITMQ_QUEUES } from '@app/shared/utils/constants';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
+import type {
+  InvitationStatusEnum,
+  Order,
+  OrderInvitation,
+} from '@app/shared/types/order';
+import { ClientUser } from '@app/shared/types/client';
 
 @Injectable()
 export class OrderService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(
+    @Inject(RABBITMQ_QUEUES.ORDER) private readonly orderProxy: ClientProxy,
+  ) {}
+  async create(createOrderDto: ClientCreateOrderDto, user: ClientUser) {
+    const order = await lastValueFrom(
+      this.orderProxy.send<Order>('clientCreateOrder', {
+        ...createOrderDto,
+        clientId: user.id,
+      }),
+    ).catch((err) => {
+      throw new RpcException(err);
+    });
+    return order;
   }
 
-  findAll() {
-    return `This action returns all order`;
+  async getVendorOrders(user: ClientUser, status: InvitationStatusEnum) {
+    const orders = await lastValueFrom(
+      this.orderProxy.send<OrderInvitation[]>('getClientInvitations', {
+        clientId: user.id,
+        status,
+      }),
+    ).catch((err) => {
+      throw new RpcException(err);
+    });
+    return orders;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
-  }
-
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async acceptInvitation(id: string, user: ClientUser) {
+    const invitation = await lastValueFrom(
+      this.orderProxy.send<OrderInvitation>('clientAcceptInvitation', {
+        invitationId: id,
+        clientId: user.id,
+      }),
+    ).catch((err) => {
+      throw new RpcException(err);
+    });
+    return invitation;
   }
 }

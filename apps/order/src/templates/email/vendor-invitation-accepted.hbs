@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Invitation Accepted</title>
+  <style>
+    body { margin:0; padding:24px; background:#f5f7fb; font-family:Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto; color:#111; }
+    .box { max-width:600px; margin:0 auto; background:#fff; padding:20px; border-radius:6px; }
+    a.cta { display:inline-block; background:#2563eb; color:#fff; padding:10px 14px; border-radius:6px; text-decoration:none; }
+    p { margin:12px 0; }
+    .muted { color:#6b7280; font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    {{!-- Main message --}}
+    <p>Hi {{#if vendorName}}{{vendorName}}{{else}}there{{/if}},</p>
+
+    <p>
+      The client has accepted your invitation
+      {{#if orderTitle}}for order <strong>#{{orderTitle}}</strong>{{/if}}.
+    </p>
+
+    {{#if orderUrl}}
+      <p><a href="{{orderUrl}}" class="cta" target="_blank" rel="noopener noreferrer">Go to order</a></p>
+      <p class="muted">Or use this link: {{orderUrl}}</p>
+    {{else}}
+      <p class="muted">No order link was provided.</p>
+    {{/if}}
+
+    {{!-- Client details: show only if at least one client field exists --}}
+    {{#if clientName}}
+      <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
+      <div>
+        <strong>Client details</strong>
+        <p style="margin:6px 0;">
+          {{#if clientName}}Name: {{clientName}}<br>{{/if}}
+          {{#if clientEmail}}Email: <a href="mailto:{{clientEmail}}">{{clientEmail}}</a><br>{{/if}}
+        </p>
+      </div>
+    {{/if}}
+
+    <p class="muted">Thanks,<br>{{#if companyName}}{{companyName}}{{else}}The team{{/if}}</p>
+  </div>
+</body>
+</html>

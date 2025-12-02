@@ -72,7 +72,7 @@ import { OrderStatusWorker } from './workers/order-status.worker';
       inject: [ConfigService],
     }),
     BullModule.registerQueue({
-      name: ORDER_JOB_NAMES.ORDER_INVITATIONS,
+      name: ORDER_JOB_NAMES.ORDER_INVITATIONS_EXPIRATION_HANDLER,
     }),
     BullModule.registerQueue({
       name: ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE,

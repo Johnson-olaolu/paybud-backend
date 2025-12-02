@@ -1,34 +1,64 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Req,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { ClientCreateOrderDto } from './dto/create-order.dto';
+import type { ClientUser } from '@app/shared/types/client';
+import type { InvitationStatusEnum } from '@app/shared/types/order';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
-@Controller('order')
+@ApiBearerAuth()
+@UseGuards(AuthGuard('client-jwt'))
+@ApiTags('Client Order')
+@Controller('client/order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  async create(
+    @Body() createOrderDto: ClientCreateOrderDto,
+    @Req() request: Request,
+  ) {
+    const user = (request as any).user as ClientUser;
+    const data = await this.orderService.create(createOrderDto, user);
+    return {
+      message: 'Order created successfully',
+      success: true,
+      data,
+    };
   }
 
-  @Get()
-  findAll() {
-    return this.orderService.findAll();
+  @Get('invitation')
+  async getVendorOrders(
+    @Req() request: Request,
+    @Query('status') status: InvitationStatusEnum,
+  ) {
+    const user = (request as any).user as ClientUser;
+    const data = await this.orderService.getVendorOrders(user, status);
+    return {
+      message: 'Vendor orders fetched successfully',
+      success: true,
+      data,
+    };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
+  @Post('invitation/:id/accept-invitation')
+  async acceptInvitation(@Param('id') id: string, @Req() request: Request) {
+    const user = (request as any).user as ClientUser;
+    const data = await this.orderService.acceptInvitation(id, user);
+    return {
+      message: 'Invitation accepted successfully',
+      success: true,
+      data,
+    };
   }
 }

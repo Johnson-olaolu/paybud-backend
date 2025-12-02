@@ -25,6 +25,7 @@ export class EmailService {
     private mailerService: MailerService,
     private configService: ConfigService<EnvironmentVariables>,
     @Inject(RABBITMQ_QUEUES.GATEWAY) private gatewayProxy: ClientProxy,
+    @Inject(RABBITMQ_QUEUES.CLIENT) private clientProxy: ClientProxy,
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
   ) {}
 
@@ -48,23 +49,21 @@ export class EmailService {
   async sendClientEmail(sendEmailDto: SendClientEmailDto): Promise<string> {
     const { clientId, subject, body } = sendEmailDto;
     try {
-      const clientEmailResponse = await this.gatewayProxy
-        .send<{ email: string }>('getClientEmail', { clientId })
-        .toPromise();
-
-      if (!clientEmailResponse || !clientEmailResponse.email) {
-        throw new Error('Client email not found');
-      }
-
-      const email = clientEmailResponse.email;
+      const client = await lastValueFrom(
+        this.clientProxy.send<User>('findOneUser', clientId),
+      ).catch((error) => {
+        throw new InternalServerErrorException(
+          `Failed to fetch client ${clientId}: ${error?.message}`,
+        );
+      });
 
       await this.mailerService.sendMail({
-        to: [email],
+        to: [client.email],
         subject,
         html: body,
       });
 
-      const result = `Email sent to client ${clientId} at ${email} with subject: ${subject}`;
+      const result = `Email sent to client ${clientId} at ${client.email} with subject: ${subject}`;
       this.logger.log(result);
       return result;
     } catch (error: any) {
@@ -84,8 +83,10 @@ export class EmailService {
         businessId,
         roles,
       }),
-    );
-
+    ).catch(() => {
+      throw new InternalServerErrorException('Could not end Email');
+    });
+    console.log({ users });
     try {
       const emails = users.map((user) => user.email);
 

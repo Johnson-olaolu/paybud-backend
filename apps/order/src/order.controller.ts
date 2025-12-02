@@ -60,4 +60,14 @@ export class OrderController {
       data.vendorId,
     );
   }
+
+  @MessagePattern('deleteOrder')
+  deleteOrder(@Payload() id: string) {
+    return this.orderService.deleteOrder(id);
+  }
+
+  @MessagePattern('cancelOrder')
+  cancelOrder(@Payload() id: string) {
+    return this.orderService.cancelOrder(id);
+  }
 }

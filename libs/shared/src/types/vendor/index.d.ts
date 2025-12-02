@@ -24,6 +24,8 @@ export interface Business extends IDocument {
   owner?: User;
   profile?: BusinessProfile;
   users?: User[];
+  businessEmail: string;
+  businessPhone: string;
 }
 
 export interface BusinessProfile extends IDocument {

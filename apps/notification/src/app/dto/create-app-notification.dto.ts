@@ -10,7 +10,7 @@ import { NotificationTypeEnum } from '../../utils/constants';
 
 export class CreateClientAppNotificationDto {
   @IsUUID()
-  userId: string;
+  clientId: string;
 
   @IsString()
   @IsNotEmpty()

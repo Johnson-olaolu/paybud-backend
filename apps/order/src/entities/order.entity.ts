@@ -66,7 +66,9 @@ export class Order extends BaseEntity {
   endDate: Date;
 
   @Column({
-    type: 'money',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
     default: 0,
   })
   amount: number;

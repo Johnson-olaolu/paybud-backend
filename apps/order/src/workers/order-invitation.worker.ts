@@ -5,7 +5,7 @@ import { LessThan, Repository } from 'typeorm';
 import { Job } from 'bullmq';
 import { InvitationStatusEnum, ORDER_JOB_NAMES } from '../utils/constants';
 
-@Processor(ORDER_JOB_NAMES.ORDER_INVITATIONS)
+@Processor(ORDER_JOB_NAMES.ORDER_INVITATIONS_EXPIRATION_HANDLER)
 export class OrderInvitationWorker extends WorkerHost {
   constructor(
     @InjectRepository(OrderInvitation)
