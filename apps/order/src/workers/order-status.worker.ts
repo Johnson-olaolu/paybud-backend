@@ -36,26 +36,16 @@ export class OrderStatusWorker extends WorkerHost {
   async process(job: Job<any, any, OrderStatusEnum>): Promise<any> {
     switch (job.name) {
       case OrderStatusEnum.INVITATION_ACCEPTED: {
-        const { id, clientId, vendorId } = job.data;
-        //Get order and update status
-        const order = await this.orderRepository.findOne({
-          where: { id },
-          relations: {},
-        });
-        if (!order) {
-          throw new BadRequestException('Order not found');
-        }
-        order.status = OrderStatusEnum.INVITATION_ACCEPTED;
-
+        const { order }: { order: Order } = job.data;
         //fetch vendor and client details
         const vendor = await lastValueFrom(
-          this.vendorProxy.send<Business>('findOneBusiness', vendorId),
+          this.vendorProxy.send<Business>('findOneBusiness', order.vendorId),
         ).catch((error) => {
           throw new BadRequestException(error?.message);
         });
 
         const client = await lastValueFrom(
-          this.clientProxy.send<ClientUser>('findOneUser', clientId),
+          this.clientProxy.send<ClientUser>('findOneUser', order.clientId),
         ).catch((error) => {
           throw new BadRequestException(error?.message);
         });
@@ -80,7 +70,7 @@ export class OrderStatusWorker extends WorkerHost {
         void this.notificationProxy.emit<boolean, SendClientAppNotificationDto>(
           'sendClientNotification',
           {
-            clientId: vendor.id,
+            clientId: client.id,
             action: 'order:accepted',
             popup: true,
             message: `Your order #${order?.id} is now pending payment.`,
@@ -115,21 +105,23 @@ export class OrderStatusWorker extends WorkerHost {
             data: order,
           },
         );
-
-        // Save the updated order status
-        return order.save();
+        return `Notifications for order ${order.id} sent status ${job.name} to client ${client.id} and vendor ${vendor.id}`;
       }
+
       case OrderStatusEnum.CLIENT_APPROVED: {
-        const { id } = job.data;
-        //Get order and update status
-        const order = await this.orderRepository.findOne({
-          where: { id },
-          relations: {},
+        const { order }: { order: Order } = job.data;
+        const vendor = await lastValueFrom(
+          this.vendorProxy.send<Business>('findOneBusiness', order.vendorId),
+        ).catch((error) => {
+          throw new BadRequestException(error?.message);
         });
-        if (!order) {
-          throw new BadRequestException('Order not found');
-        }
-        order.status = OrderStatusEnum.CLIENT_APPROVED;
+
+        const client = await lastValueFrom(
+          this.clientProxy.send<ClientUser>('findOneUser', order.clientId),
+        ).catch((error) => {
+          throw new BadRequestException(error?.message);
+        });
+
         //send notifications
         this.notificationProxy.emit('sendVendorNotification', {
           businessId: order.vendorId,
@@ -142,6 +134,16 @@ export class OrderStatusWorker extends WorkerHost {
           businessId: order.vendorId,
           subject: 'Client Approved Order',
           body: generateEmailBody('vendor-client-approved-order', {
+            vendorName: vendor.name,
+            clientName: client.fullName,
+            clientEmail: client.email,
+            companyName: vendor.name,
+            orderId: order.id,
+            approvalDate: new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
             orderTitle: order.title,
             orderUrl: `${process.env.VENDOR_APP_URL}/dashboard/order/${order.id}`,
           }),

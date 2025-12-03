@@ -6,6 +6,7 @@ import {
   VendorCreateOrderDto,
 } from './dto/create-order.dto';
 import { InvitationStatusEnum } from './utils/constants';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Controller()
 export class OrderController {
@@ -58,6 +59,36 @@ export class OrderController {
     return this.orderService.vendorAcceptInvitation(
       data.invitationId,
       data.vendorId,
+    );
+  }
+
+  @MessagePattern('getOrderById')
+  getOrderById(@Payload() id: string) {
+    return this.orderService.findOne(id);
+  }
+
+  @MessagePattern('getAllOrders')
+  getAllOrders() {
+    return this.orderService.findAll();
+  }
+
+  @MessagePattern('vendorUpdateOrder')
+  vendorUpdateOrder(
+    @Payload() payload: { id: string; updateOrderDto: UpdateOrderDto },
+  ) {
+    return this.orderService.vendorUpdateOrder(
+      payload.id,
+      payload.updateOrderDto,
+    );
+  }
+
+  @MessagePattern('clientUpdateOrder')
+  clientUpdateOrder(
+    @Payload() payload: { id: string; updateOrderDto: UpdateOrderDto },
+  ) {
+    return this.orderService.clientUpdateOrder(
+      payload.id,
+      payload.updateOrderDto,
     );
   }
 

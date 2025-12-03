@@ -8,6 +8,7 @@ import {
   UseGuards,
   Req,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { VendorCreateOrderDto } from './dto/create-order.dto';
@@ -16,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { User } from '@app/shared/types/vendor';
 import { BusinessGuard } from '../guards/business.guard';
 import type { InvitationStatusEnum } from '@app/shared/types/order';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'), BusinessGuard)
@@ -58,6 +60,19 @@ export class OrderController {
     const data = await this.orderService.acceptInvitation(id, user);
     return {
       message: 'Invitation accepted successfully',
+      success: true,
+      data,
+    };
+  }
+
+  @Patch(':id')
+  async vendorUpdateOrder(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    const data = await this.orderService.vendorUpdateOrder(id, updateOrderDto);
+    return {
+      message: 'Order updated successfully',
       success: true,
       data,
     };

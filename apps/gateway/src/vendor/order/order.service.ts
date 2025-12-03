@@ -9,6 +9,7 @@ import type {
   OrderInvitation,
 } from '@app/shared/types/order';
 import { User } from '@app/shared/types/vendor';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -48,5 +49,17 @@ export class OrderService {
       throw new RpcException(err);
     });
     return invitation;
+  }
+
+  async vendorUpdateOrder(orderId: string, updateOrderDto: UpdateOrderDto) {
+    const order = await lastValueFrom(
+      this.orderProxy.send<Order>('vendorUpdateOrder', {
+        id: orderId,
+        updateOrderDto,
+      }),
+    ).catch((err) => {
+      throw new RpcException(err);
+    });
+    return order;
   }
 }

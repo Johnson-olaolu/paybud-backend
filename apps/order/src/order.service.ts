@@ -29,7 +29,11 @@ import type { ClientUser } from '@app/shared/types/client';
 import type { Business } from '@app/shared/types/vendor';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import ms from 'ms';
+import {
+  SendClientAppNotificationDto,
+  SendVendorAppNotificationDto,
+} from '@app/shared/dto/notification.dto';
+// import ms from 'ms';
 
 @Injectable()
 export class OrderService {
@@ -39,6 +43,8 @@ export class OrderService {
     @InjectRepository(Order) private orderRepository: Repository<Order>,
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
     @Inject(RABBITMQ_QUEUES.CLIENT) private clientProxy: ClientProxy,
+    @Inject(RABBITMQ_QUEUES.NOTIFICATION)
+    private notificationProxy: ClientProxy,
     private dataSource: DataSource,
     @InjectQueue(ORDER_JOB_NAMES.PROCESS_ORDER_STATUS_CHANGE)
     private orderStatusChangeQueue: Queue,
@@ -141,6 +147,11 @@ export class OrderService {
     return order;
   }
 
+  async findAll() {
+    const orders = await this.orderRepository.find();
+    return orders;
+  }
+
   async getClientInvitations(clientId: string, status?: InvitationStatusEnum) {
     return this.orderInvitationService.getClientInvitations(clientId, status);
   }
@@ -155,12 +166,14 @@ export class OrderService {
         invitationId,
         clientId,
       );
+    const order = await this.findOne(orderInvitation.order.id);
+    order.clientId = orderInvitation.clientId;
+    order.status = OrderStatusEnum.INVITATION_ACCEPTED;
+    const savedOrder = await order.save();
     await this.orderStatusChangeQueue.add(
       OrderStatusEnum.INVITATION_ACCEPTED,
       {
-        id: orderInvitation.order.id,
-        clientId: orderInvitation.clientId,
-        vendorId: orderInvitation.vendorId,
+        order: savedOrder,
       },
       {
         jobId: `process-order-status-change-${orderInvitation.order.id}-${OrderStatusEnum.INVITATION_ACCEPTED}`,
@@ -175,18 +188,63 @@ export class OrderService {
         invitationId,
         vendorId,
       );
+    const order = await this.findOne(orderInvitation.order.id);
+    order.vendorId = orderInvitation.vendorId;
+    order.status = OrderStatusEnum.INVITATION_ACCEPTED;
+    const savedOrder = await order.save();
     await this.orderStatusChangeQueue.add(
       OrderStatusEnum.INVITATION_ACCEPTED,
       {
-        id: orderInvitation.order.id,
-        clientId: orderInvitation.clientId,
-        vendorId: orderInvitation.vendorId,
+        order: savedOrder,
       },
       {
         jobId: `process-order-status-change-${orderInvitation.order.id}-${OrderStatusEnum.INVITATION_ACCEPTED}`,
       },
     );
     return orderInvitation;
+  }
+
+  async vendorUpdateOrder(orderId: string, updateOrderDto: UpdateOrderDto) {
+    const order = await this.findOne(orderId);
+    if (updateOrderDto.amount) order.amount = updateOrderDto.amount;
+    if (updateOrderDto.feesToBePaidBy)
+      order.feesToBePaidBy = updateOrderDto.feesToBePaidBy;
+    if (updateOrderDto.endDate) order.endDate = updateOrderDto.endDate;
+    for (const orderItemDto of updateOrderDto.orderItems) {
+      await this.orderItemServioce.createOrUpdateOrderItem(order, orderItemDto);
+    }
+
+    this.notificationProxy.emit<boolean, SendClientAppNotificationDto>(
+      'sendClientNotification',
+      {
+        clientId: order.clientId,
+        action: 'order:changed',
+        message: `Vendor made changes to order #${order?.id},`,
+        data: order,
+      },
+    );
+    return order;
+  }
+
+  async clientUpdateOrder(orderId: string, updateOrderDto: UpdateOrderDto) {
+    const order = await this.findOne(orderId);
+    if (updateOrderDto.amount) order.amount = updateOrderDto.amount;
+    if (updateOrderDto.feesToBePaidBy)
+      order.feesToBePaidBy = updateOrderDto.feesToBePaidBy;
+    if (updateOrderDto.endDate) order.endDate = updateOrderDto.endDate;
+    for (const orderItemDto of updateOrderDto.orderItems) {
+      await this.orderItemServioce.createOrUpdateOrderItem(order, orderItemDto);
+    }
+    this.notificationProxy.emit<boolean, SendVendorAppNotificationDto>(
+      'sendVendorNotification',
+      {
+        businessId: order.vendorId,
+        action: 'order:changed',
+        message: `Client made changes to order #${order?.id} `,
+        data: order,
+      },
+    );
+    return order;
   }
 
   async deleteOrder(id: string) {
@@ -217,8 +275,47 @@ export class OrderService {
     return order;
   }
 
-  async clientApprovesOrder(id: string) {}
+  async clientApprovesOrder(id: string) {
+    const order = await this.findOne(id);
+    if (order.status !== OrderStatusEnum.INVITATION_ACCEPTED) {
+      throw new BadRequestException(
+        'Only orders pending client approval can be approved',
+      );
+    }
+    order.status = OrderStatusEnum.CLIENT_APPROVED;
+    const savedOrder = await order.save();
+    await this.orderStatusChangeQueue.add(
+      OrderStatusEnum.CLIENT_APPROVED,
+      {
+        order: savedOrder,
+      },
+      {
+        jobId: `process-order-status-change-${savedOrder.id}-${OrderStatusEnum.CLIENT_APPROVED}`,
+      },
+    );
+    return savedOrder;
+  }
 
+  async vendorApprovesOrder(id: string) {
+    const order = await this.findOne(id);
+    if (order.status !== OrderStatusEnum.CLIENT_APPROVED) {
+      throw new BadRequestException(
+        'Only orders pending vendor approval can be approved',
+      );
+    }
+    order.status = OrderStatusEnum.PENDING_PAYMENT;
+    const savedOrder = await order.save();
+    await this.orderStatusChangeQueue.add(
+      OrderStatusEnum.PENDING_PAYMENT,
+      {
+        order: savedOrder,
+      },
+      {
+        jobId: `process-order-status-change-${savedOrder.id}-${OrderStatusEnum.PENDING_PAYMENT}`,
+      },
+    );
+    return savedOrder;
+  }
   // async vendorCancelActiveOrder(id: string) {
   //   const order = await this.orderRepository.findOne({
   //     where: { id, status: OrderStatusEnum.ACTIVE },
