@@ -1,6 +1,6 @@
 import { File } from '../file';
 
-interface Order {
+export interface Order {
   id: string;
 
   title: string;
@@ -17,7 +17,7 @@ interface Order {
 
   invoices: OrderInvoice[];
 
-  snapshots: OrderSnapshot[];
+  // snapshots: OrderSnapshot[];
 
   items: OrderItem[];
 
@@ -43,9 +43,9 @@ interface Order {
 export interface OrderChat {
   id: string;
   order: Order;
-  vendorProfile: User;
-  clientProfile: ClientUser;
-  messages: OrderChatMessage[];
+  // vendorProfile: User;
+  // clientProfile: ClientUser;
+  // messages: OrderChatMessage[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -123,4 +123,29 @@ export enum InvitationStatusEnum {
   ACCEPTED = 'ACCEPTED',
   DECLINED = 'DECLINED',
   EXPIRED = 'EXPIRED',
+}
+
+export enum OrderStatusEnum {
+  DRAFT = 'DRAFT',
+  INVITATION_SENT = 'INVITATION_SENT',
+  INVITATION_ACCEPTED = 'INVITATION_ACCEPTED',
+  PENDING_CONFIRMATION = 'PENDING_CONFIRMATION',
+  CLIENT_APPROVED = 'CLIENT_APPROVED',
+  PENDING_PAYMENT = 'PENDING_PAYMENT',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  DISPUTED = 'DISPUTED',
+}
+
+export enum OrderItemImportanceLevelEnum {
+  ADDON = 'ADDON',
+  NECESSITY = 'NECESSITY',
+  ABSOLUTE_NECESSITY = 'ABSOLUTE_NECESSITY',
+}
+
+export enum OrderItemStatusEnum {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }

@@ -7,6 +7,7 @@ import {
 } from './dto/create-order.dto';
 import { InvitationStatusEnum } from './utils/constants';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { QueryOrderDto } from './dto/query-order.dto';
 
 @Controller()
 export class OrderController {
@@ -70,6 +71,11 @@ export class OrderController {
   @MessagePattern('getAllOrders')
   getAllOrders() {
     return this.orderService.findAll();
+  }
+
+  @MessagePattern('queryOrder')
+  queryOrder(@Payload() queryOrderDto: QueryOrderDto) {
+    return this.orderService.queryOrder(queryOrderDto);
   }
 
   @MessagePattern('vendorUpdateOrder')

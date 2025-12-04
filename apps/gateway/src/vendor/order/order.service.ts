@@ -10,6 +10,7 @@ import type {
 } from '@app/shared/types/order';
 import { User } from '@app/shared/types/vendor';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { VendorQueryOrderDto } from './dto/query-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -27,7 +28,19 @@ export class OrderService {
     return order;
   }
 
-  async getVendorOrders(user: User, status: InvitationStatusEnum) {
+  async queryOrders(user: User, query: VendorQueryOrderDto) {
+    const orders = await lastValueFrom(
+      this.orderProxy.send<Order[]>('queryOrder', {
+        ...query,
+        vendorId: user.business?.id,
+      }),
+    ).catch((err) => {
+      throw new RpcException(err);
+    });
+    return orders;
+  }
+
+  async getVendorOrderInvitations(user: User, status: InvitationStatusEnum) {
     const orders = await lastValueFrom(
       this.orderProxy.send<OrderInvitation[]>('getVendorInvitations', {
         vendorId: user.business?.id,

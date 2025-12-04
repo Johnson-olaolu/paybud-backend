@@ -1,10 +1,11 @@
 import {
-  IsBoolean,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
 } from 'class-validator';
+import { OrderItemImportanceLevelEnum } from '../utils/constants';
 
 export class CreateOrderItemDto {
   @IsString()
@@ -18,7 +19,7 @@ export class CreateOrderItemDto {
   @IsUUID('all', { each: true })
   fileIds: string[];
 
-  @IsBoolean()
+  @IsEnum(OrderItemImportanceLevelEnum)
   @IsOptional()
-  isOptional: string;
+  importanceLevel: OrderItemImportanceLevelEnum;
 }

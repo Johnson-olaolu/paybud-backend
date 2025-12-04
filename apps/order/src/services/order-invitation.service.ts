@@ -201,7 +201,7 @@ export class OrderInvitationService implements OnModuleInit {
 
   async getVendorInvitations(vendorId: string, status?: InvitationStatusEnum) {
     const vendor = await lastValueFrom(
-      this.vendorProxy.send<Business>('findOneBusiness ', vendorId),
+      this.vendorProxy.send<Business>('findOneBusiness', vendorId),
     ).catch((error) => {
       throw new BadRequestException(error?.message);
     });

@@ -18,6 +18,7 @@ import { User } from '@app/shared/types/vendor';
 import { BusinessGuard } from '../guards/business.guard';
 import type { InvitationStatusEnum } from '@app/shared/types/order';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { VendorQueryOrderDto } from './dto/query-order.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'), BusinessGuard)
@@ -25,6 +26,20 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 @Controller('vendor/order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
+
+  @Get()
+  async getVendorOrders(
+    @Query() query: VendorQueryOrderDto,
+    @Req() request: Request,
+  ) {
+    const user = (request as any).user as User;
+    const data = await this.orderService.queryOrders(user, query);
+    return {
+      message: 'Vendor orders fetched successfully',
+      success: true,
+      data,
+    };
+  }
 
   @Post()
   async create(
@@ -40,13 +55,16 @@ export class OrderController {
     };
   }
 
-  @Get()
-  async getVendorOrders(
+  @Get('invitation')
+  async getVendorOrderInvitations(
     @Req() request: Request,
     @Query('status') status: InvitationStatusEnum,
   ) {
     const user = (request as any).user as User;
-    const data = await this.orderService.getVendorOrders(user, status);
+    const data = await this.orderService.getVendorOrderInvitations(
+      user,
+      status,
+    );
     return {
       message: 'Vendor orders fetched successfully',
       success: true,

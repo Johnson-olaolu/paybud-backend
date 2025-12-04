@@ -33,6 +33,7 @@ import {
   SendClientAppNotificationDto,
   SendVendorAppNotificationDto,
 } from '@app/shared/dto/notification.dto';
+import { QueryOrderDto } from './dto/query-order.dto';
 // import ms from 'ms';
 
 @Injectable()
@@ -132,15 +133,12 @@ export class OrderService {
     }
   }
 
-  async updateOrder(updateOrderDto: UpdateOrderDto) {
-    const order = await this.findOne(updateOrderDto.id);
-    order.amount = updateOrderDto.amount;
-    order.feesToBePaidBy = updateOrderDto.feesToBePaidBy!;
-    return order.save();
-  }
-
   async findOne(id: string) {
-    const order = await this.orderRepository.findOne({ where: { id } });
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: { items: true },
+      relationLoadStrategy: 'query',
+    });
     if (!order) {
       throw new BadRequestException('Order not found');
     }
@@ -315,6 +313,22 @@ export class OrderService {
       },
     );
     return savedOrder;
+  }
+
+  async queryOrder(queryOrderDto: QueryOrderDto) {
+    const orders = await this.orderRepository.find({
+      where: {
+        id: queryOrderDto.id,
+        vendorId: queryOrderDto.vendorId,
+        clientId: queryOrderDto.clientId,
+        status: queryOrderDto.status,
+      },
+      relations: {
+        items: true,
+      },
+      relationLoadStrategy: 'query',
+    });
+    return orders;
   }
   // async vendorCancelActiveOrder(id: string) {
   //   const order = await this.orderRepository.findOne({

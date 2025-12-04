@@ -9,7 +9,7 @@ import {
   ValidateNested,
   IsDateString,
 } from 'class-validator';
-import { CreateOrderItemDto } from './create-order-item.dto';
+import { VendorCreateOrderItemDto } from './create-order-item.dto';
 
 export class VendorCreateOrderDto {
   @IsString()
@@ -41,6 +41,6 @@ export class VendorCreateOrderDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateOrderItemDto)
-  orderItems: CreateOrderItemDto[];
+  @Type(() => VendorCreateOrderItemDto)
+  orderItems: VendorCreateOrderItemDto[];
 }

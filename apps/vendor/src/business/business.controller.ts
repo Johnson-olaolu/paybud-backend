@@ -26,6 +26,7 @@ export class BusinessController {
 
   @MessagePattern('findOneBusiness')
   findOne(@Payload() id: string) {
+    console.log({ id });
     return this.businessService.findOne(id);
   }
 
