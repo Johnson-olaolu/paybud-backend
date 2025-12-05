@@ -59,7 +59,6 @@ export class BusinessWorker extends WorkerHost {
         const data = job.data as CreateBusinessDto;
         const user = await this.userService.findOne(data.userId);
 
-        console.log({ user });
         try {
           // Create business and business profile
 
@@ -201,7 +200,6 @@ export class BusinessWorker extends WorkerHost {
               lastName: customerDetails.data.last_name as string,
             });
             business.wallets = [wallet];
-            console.log({ business });
             await queryRunner.manager.save(business);
             await queryRunner.commitTransaction();
             this.notificationProxy.emit<boolean, SendAppNotificationDto>(

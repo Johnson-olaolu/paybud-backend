@@ -8,6 +8,34 @@ import {
   IsUUID,
 } from 'class-validator';
 
+export class SendAppNotificationDto {
+  @IsString()
+  @IsNotEmpty()
+  clientType: 'vendor' | 'client' | 'admin';
+
+  @IsUUID()
+  userId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+
+  @IsString()
+  @IsNotEmpty()
+  action: string;
+
+  @IsEnum(['info', 'warning', 'error', 'success'])
+  @IsOptional()
+  type?: 'info' | 'warning' | 'error' | 'success';
+
+  @IsBoolean()
+  @IsOptional()
+  popup?: boolean;
+
+  @IsOptional()
+  data?: any;
+}
+
 export class SendClientAppNotificationDto {
   @IsUUID()
   clientId: string;

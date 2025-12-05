@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AppNotification } from './entitities/app-notifications.entity';
 import { Repository } from 'typeorm';
 import {
+  CreateAppNotificationDto,
   CreateClientAppNotificationDto,
   CreateVendorAppNotificationDto,
 } from './dto/create-app-notification.dto';
@@ -25,6 +26,18 @@ export class AppService {
     @Inject(RABBITMQ_QUEUES.GATEWAY) private gatewayProxy: ClientProxy,
     @Inject(RABBITMQ_QUEUES.VENDOR) private vendorProxy: ClientProxy,
   ) {}
+
+  async createNotification(createNotificationDto: CreateAppNotificationDto) {
+    const notification = await this.appNotificationRepository.save({
+      ...createNotificationDto,
+    });
+    const notifications = await this.getUserNotifications({
+      userId: createNotificationDto.userId,
+    });
+    this.sendNotificationsToUser(notifications);
+    if (createNotificationDto.popup) this.sendPopupToUser(notification);
+    return notification;
+  }
 
   async createClientNotification(
     createAppNotificationDto: CreateClientAppNotificationDto,

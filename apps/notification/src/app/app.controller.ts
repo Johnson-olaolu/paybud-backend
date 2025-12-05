@@ -17,6 +17,13 @@ export class AppController {
     @InjectQueue(JOB_NAMES.APP) private appQueue: Queue,
   ) {}
 
+  @MessagePattern('sendNotification')
+  async createNotificationsGeneral(data: CreateClientAppNotificationDto) {
+    await this.appQueue.add('createNotification', data, {
+      removeOnComplete: true,
+    });
+  }
+
   @MessagePattern('sendClientNotification')
   async createNotification(data: CreateClientAppNotificationDto) {
     await this.appQueue.add('createNotification', data, {
