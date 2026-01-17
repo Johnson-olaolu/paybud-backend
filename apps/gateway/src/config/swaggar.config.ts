@@ -10,6 +10,9 @@ export const configureSwagger = async (app: INestApplication, path: string) => {
     .build();
   await SwaggerModule.loadPluginMetadata(metadata);
   const document = SwaggerModule.createDocument(app, config);
-  document.tags = document.tags?.sort((a, b) => a.name.localeCompare(b.name));
-  SwaggerModule.setup(path, app, document);
+  SwaggerModule.setup(path, app, document, {
+    swaggerOptions: {
+      tagsSorter: 'alpha',
+    },
+  });
 };
